@@ -1,0 +1,12 @@
+start
+store 420.69
+out 0
+i
+54.3990
+4
+store 505
+out $2.33
+out 1
+aout $122
+aout $65
+end
