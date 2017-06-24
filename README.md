@@ -7,7 +7,7 @@ The concept/s(currently):
     - The Imemory is limited, with a maximum size of 4096 cells.
     (more space than anyone needs for this purpose really)
 
-The syntax:
+The syntax(currently):
 
     - every file must begin with either START or start.
     - every file must end with either END or end.
