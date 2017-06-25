@@ -11,6 +11,8 @@ The syntax(currently):
 
     - every file must begin with either START or start.
     - every file must end with either END or end.
+    - commenting is done with the character "~", 
+    - and can only be added on it's own lines, or at the end of others.
     - the keywords available are such:
     -     store or STORE
     -     out or OUT
