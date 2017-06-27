@@ -38,7 +38,6 @@ The Rules of the lang:
         or at the end of another.
 
 There are a few keywords, I'll list them now.
-    (The full descriptions will be at the end.)
 
     const:
         stores constant number in the Imemory
