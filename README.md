@@ -22,9 +22,6 @@ The Rules of the lang:
     - Capitals are optional for keywords,
         but are not for special use characters(such as i or $)
 
-    ~ Every program must define the size of the Imemory
-        (the place for storing constant numbers int, or float.)
-
     - Before the START statement, (which must 
         occupy the first five character spaces of a line),
         commmenting is allowed because, the interpreter 
