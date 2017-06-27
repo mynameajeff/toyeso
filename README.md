@@ -1,53 +1,87 @@
 # toyeso
 A toy esoteric language project created by mynameajeff.
 
-The concept/s(currently):
+The Toyeso Spec:
 
-    - The Imemory, it is a place to store numbers immutably for use until the program ends.
-    - The Imemory is limited, with a maximum size of 4096 cells.
-    (more space than anyone needs for this purpose really)
+Short Description:
 
-The syntax(currently):
+    - A toy esoteric language project created by mynameajeff.
 
-    - every file must begin with either START or start.
-    - every file must end with either END or end.
-    - commenting is done with the character "~", 
-    - and can only be added on it's own lines, or at the end of others.
-    - the keywords available are such:
-    -     store or STORE
-    -     out or OUT
-    -     aout or AOUT
+The aim of this language:
 
-~~~~~~~~~~~~~~~~
-The STORE keyword:
-    this keyword will store the number given to it in the next available slot of Imemory.
-    example of use:
-        'store 202.44'
-    output:
-        'imemory: stored 202.44 at index 0.'
-~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~
-The OUT keyword:
-this keyword has two ways of use: with $ and without $    
-    without $: this references a number in imemory, for example: 0 would be the first item saved to imem
-    example of use:
-        'out 0'
-    output:
-        'imemory: at index 0 there is "202.44"'
+    ~ "To look similar to ASM/lower level langs, 
+        but have functionality more similar to python, 
+        including my own personal tweaks. " - mynameajeff
 
-    with $: this prints out 'direct: input was "££".' with ££ being the number passed after the $.
-    example of use:
-        'out $0'
-    output:
-        'direct: input was "0".'
-~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~
-The AOUT keyword:
-this keyword has two ways of use: with $ and without $    
-    without $: <not implemented>
-    
-    with $: this prints out 'ascii output: $$' with $$ being the ascii character at the number given
-    example of use:
-        'aout $65'
-    output:
-        'ascii output: A'
+The Rules of the lang:
+
+    - Every program must begin with a START statement.
+
+    - Every program must end with an END statement.
+
+    - Capitals are optional for keywords,
+        but are not for special use characters(such as i or $)
+
+    ~ Every program must define the size of the Imemory
+        (the place for storing constant numbers int, or float.)
+
+    - Before the START statement, (which must 
+        occupy the first five character spaces of a line),
+        commmenting is allowed because, the interpreter 
+        will not have begun scanning for syntax. This also
+        means no code will be recognised here.
+
+    - After the END statement, (same thing as START but three)
+        you may comment once again, because the interpreter will
+        have terminated and is therefore not scanning for syntax anymore.
+
+    - In the event you want to comment within the codespace(start-end)
+        you could use the special character "~",
+        either on it's own line,
+        or at the end of another.
+
+There are a few keywords, I'll list them now.
+    (The full descriptions will be at the end.)
+
+    const:
+        stores constant number in the Imemory
+        where the next index is available.
+
+        Example "const 55"
+
+    decl:
+        plain: <not implemented>
+
+        i: <not implemented>
+
+        $:
+            creates a variable with the name given within the "'s 
+            and the value given after the $.
+
+            Example "decl "variable" $54.63"
+
+    out:
+        plain: <not implemented>
+
+        i: 
+            This command will output the value stored at the index 
+            in the Imemory specified by the number after the i,
+            which is by default 0.
+
+            Example "out i0"
+
+        $:
+            This command will output the value specified by the number after the $.
+
+            Example "out $22.5"
+
+    aout:
+        plain: <not implemented>
+
+        i: <not implemented>
+
+        $: 
+            This command will output the ascii character 
+            represented by the number given after the $.
+
+            Example "aout $65"
