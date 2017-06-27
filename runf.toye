@@ -1,15 +1,25 @@
-start~Beginning the prog
-~ Comment
-store 420.69 
-out 0
-i
-54.3990
-4 ~ Mid Comment
-store 505
-out $2.33
-out 1~Also comment
-aout $122
-aout $65
-aout $33 ~Super Comment
+The author of this is mynameajeff.
 
-end ~Ending the prog
+START
+
+const 166.43
+
+~ Here, you do need to use comment syntax as the interpreter is scanning here.
+
+const 505
+
+decl "variable" $54.63
+
+decl "variable2" $hello, world!
+
+out i0 ~ This is a comment on the same line as code.
+
+out i1
+
+out $2.33
+
+aout $122
+
+aout $65
+
+END
