@@ -1,4 +1,4 @@
-# toyeso
+# The Toyeso Lang
 A toy esoteric language project created by mynameajeff.
 
 The Toyeso Spec:
