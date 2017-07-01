@@ -36,6 +36,11 @@ The Rules of the lang:
         you could use the special character "~",
         either on it's own line,
         or at the end of another.
+        
+    - Type is implemented with variables(not in the Imem)
+        what is currently implemented: string, bool, int, float,
+        but variables cannot be used yet(but they are stored)
+        this functionality will be implemented soon.
 
 There are a few keywords, I'll list them now.
 
@@ -43,7 +48,7 @@ There are a few keywords, I'll list them now.
         stores constant number in the Imemory
         where the next index is available.
 
-        Example "const 55"
+        Example: const 55
 
     decl:
         plain: <not implemented>
@@ -51,10 +56,11 @@ There are a few keywords, I'll list them now.
         i: <not implemented>
 
         $:
-            creates a variable with the name given within the "'s 
+            creates a variable(of type given after :)
+            with the name given within the "'s 
             and the value given after the $.
 
-            Example "decl "variable" $54.63"
+            Example: decl:float "variable" $54.63
 
     out:
         plain: <not implemented>
@@ -64,20 +70,24 @@ There are a few keywords, I'll list them now.
             in the Imemory specified by the number after the i,
             which is by default 0.
 
-            Example "out i0"
+            Example: out i0
 
         $:
             This command will output the value specified by the number after the $.
 
-            Example "out $22.5"
+            Example: out $22.5
 
     aout:
         plain: <not implemented>
 
-        i: <not implemented>
+        i:  This command will output the ascii character
+            represented by the number in the Imem at the index
+            given after the i.
+        
+            Example: aout i0
 
         $: 
             This command will output the ascii character 
             represented by the number given after the $.
 
-            Example "aout $65"
+            Example: aout $65
