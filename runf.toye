@@ -2,23 +2,27 @@ The author of this is mynameajeff.
 
 START
 
-const 166.43
+~ Here, however, you do need to use comment syntax as the interpreter is scanning here.
 
-~ Here, you do need to use comment syntax as the interpreter is scanning here.
+const 33
 
-const 505
+const 122
 
-decl "variable" $54.63
+const 54
 
-decl "variable2" $hello, world!
+decl:int "variable" $34
+
+decl:float "var2" $54.63
+
+decl:string "var3" $hello, world!~ Comment
+
+decl:bool "var4" $true
 
 out i0 ~ This is a comment on the same line as code.
 
-out i1
-
 out $2.33
 
-aout $122
+aout i0
 
 aout $65
 
