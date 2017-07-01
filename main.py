@@ -21,6 +21,8 @@ class interpreter:
         self.flag_skip = None
         self.skipby = 0
 
+        self.flag_active = 0
+
         self.ifln = open(fl).readlines()
         #print(self.ifln) #debug statement, gives all data 4 file
 
@@ -52,10 +54,11 @@ class interpreter:
 
             elif self.flag_imemout:
                 try:
-                    i = self.imem[int(self.char_data.replace("~",""))]
+                    iz = self.char_data.replace("i","").replace("~","").rstrip()
+                    i = self.imem[int(iz)]
                 except IndexError:
-                    raise IndexError("Invalid Imemory index.")
-                ind = self.char_data.replace("~","").replace(" ","")
+                    raise error.IndexError("Invalid Imemory index.")
+                ind = self.char_data.replace("~","").rstrip()
                 print('out: at index %s there is "%s".' % (ind, i))
                 self.flag_imemout
                 self.flag_out = False
@@ -106,30 +109,32 @@ class interpreter:
 
             if " " in name:
                 raise error.SyntaxError("More than one word found between the quotation marks.")
+            elif "$" in name:
+                raise error.SyntaxError("special character in quotation marks.")
 
             if value.lower() not in ("true","false","1","0") and chk() == "bool":
-                raise error.ValueError("Invalid Value %s cannot convert to boolean."%value)
+                raise error.ValueError("Invalid Value %s cannot convert to boolean." % value)
             else:
-                exec("%s('%s')"%(chk(),value))
+                exec("%s('%s')" % (chk(),value))
             
             self.var_list.append( {name : (chk(),value)} )
             self.flag_decl = False
             print('decl: "%s" created with the type:"%s" and value "%s".'% (name,chk(),value))
 
     def encountered(self):
-        try:
-            float(self.char_data)
-        except ValueError: return 0
 
         var1 = 1
         while self.i[self.pos_char+var1] != "\n":
             self.char_data += self.i[self.pos_char+var1]
 
-            if "~" in self.char_data:
+            if "~" == self.i[self.pos_char+var1]:
                 break
 
-            if "01234567890" in self.char_data:
-                try: float(self.char_data)
+            if "01234567890" in self.char_data or not self.flag_active:
+                try:
+                    if self.i[self.pos_char+var1] != " ":
+                        float(self.char_data)
+                    else: pass
 
                 except ValueError:
                     raise error.ValueError("Cannot convert character data to Float")
@@ -159,19 +164,24 @@ class interpreter:
                 self.encountered()
             self.flag_handler()
 
+        if not self.flag_active and self.flag_start and "~" not in self.i:
+            if self.i.replace(" ","") != '\n' and self.x < len(self.ifln)-1:
+                raise SyntaxError('Invalid Syntax. No command passed at "%s".' % self.i.rstrip("\n"))
+
     def full_words(self): #keyword handler
 
         if self.i[:3].upper() == 'END':
             print("ending...")
-            # msvcrt.getch()
             sys.exit()
 
         elif self.i[:6].upper() == "CONST ":
+            self.flag_active+=1
             self.flag_const = True
             self.flag_skip = True
             self.skipby = 5
 
         elif self.i[:4].upper() == "OUT ":
+            self.flag_active+=1
             self.flag_out = True
             self.flag_skip = True
             self.skipby = 3
@@ -191,6 +201,7 @@ class interpreter:
                 raise error.SyntaxError("Invalid Syntax. No denomination character present.")
 
         elif self.i[:5].upper() == "AOUT ":
+            self.flag_active+=1
             self.flag_aout = True
             self.flag_skip = True
             self.skipby = 4
@@ -207,6 +218,7 @@ class interpreter:
                 raise error.SyntaxError("Invalid Syntax. No denomination character present.")
 
         elif self.i[:5].upper() == "DECL:":
+            self.flag_active+=1
             self.flag_skip = True
             self.skipby = 5
             if '"' in self.i:
@@ -224,17 +236,20 @@ class interpreter:
                 self.flag_start = True
                 self.flag_skip = True
                 self.skipby = 5
+                continue
 
             if self.flag_start:
                 self.full_words()
                 self.chars()
 
+            if self.flag_active:
+                self.flag_active = 0
+
 dfile = "./runf.toye"
 
 if __name__ == "__main__":
-    if 'idlelib.run' not in sys.modules:
-        try: interpreter(sys.argv[1])
-        except: 
-            print('Silently Using: default file "%s"\n' % dfile)
-            interpreter(dfile)
-    else: interpreter(dfile)
+    try: 
+        interpreter(sys.argv[1])
+    except IndexError:
+        print('Silently Using: default file "%s"\n' % dfile)
+        interpreter(dfile)
