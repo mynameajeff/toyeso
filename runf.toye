@@ -14,7 +14,7 @@ decl:int "variable" $34
 
 decl:float "var2" $54.63
 
-decl:string "var3" $hello, world!~ Comment
+decl:string "var3" $hello, world! ~ Comment
 
 decl:bool "var4" $true
 
