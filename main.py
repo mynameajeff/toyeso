@@ -97,7 +97,7 @@ class interpreter:
 
             check = [x for x in self.i if x == '"']
             name = self.i.split('"')[1].split('"')[0]
-            value = self.i[:-1].split('$')[1].split('~')[0]
+            value = self.i[:-1].split('$')[1].split('~')[0].rstrip()
 
             if len(check) == 1:
                 raise error.SyntaxError('Missing one " in order to declare Var')
