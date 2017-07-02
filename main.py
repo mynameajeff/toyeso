@@ -25,14 +25,13 @@ class interpreter:
 
         self.ifln = []
         for item in open(fl).readlines():
-            if item != "\n": self.ifln.append(item.replace("~","\n~").split("~")[0])
+            if item != "\n":
+                self.ifln.append(item.replace("~","\n~").split("~")[0])
         #print(self.ifln) #debug-gives data interpreted
 
         self.main_loop()
 
     def flag_handler(self):
-
-        if self.char_data in (" ","i"): return 0
 
         if self.flag_const:
             i = 0
@@ -82,7 +81,8 @@ class interpreter:
                 try:
                     ind = int(self.i[6:-1].replace("i",""))
                     value = int(self.imem[ind])
-                    print('aout: at index %s there is "%s".' % (ind, chr(value) ))
+                    print('aout: at index %s there is "%s".' % 
+                        (ind, chr(value)))
                 except (TypeError,ValueError):
                     raise error.TypeError(error.Int_exp_got_float)
 
@@ -107,14 +107,16 @@ class interpreter:
             elif "$" in name:
                 raise error.SyntaxError(error.spcChar_in_quot)
 
-            if value.lower() not in ("true","false","1","0") and chk(self.i) == "bool":
-                raise error.TypeError(error.Conv_Bool % value)
+            if value.lower() not in ("true","false","1","0"):
+                if chk(self.i) == "bool":
+                    raise error.TypeError(error.Conv_Bool % value)
             else:
                 exec("%s('%s')" % (chk(self.i),value))
             
             self.var_list.append( {name : (chk(self.i),value)} )
             self.flag_decl = False
-            print('decl: "%s" created with the type:"%s" and value "%s".'% (name,chk(self.i),value))
+            print('decl: "%s" created with the type:"%s" and value "%s".' % 
+                (name,chk(self.i),value))
 
     def encountered(self):
 
@@ -148,7 +150,9 @@ class interpreter:
 
             if not self.flag_aout:
                 self.encountered()
-            self.flag_handler()
+
+            if self.char_data not in (" ","i"):
+                self.flag_handler()
 
         if not self.flag_active and self.flag_start:
             if self.i.replace(" ","") != '\n' and self.x < len(self.ifln)-1:
@@ -232,13 +236,11 @@ class interpreter:
                 self.flag_active = 0
 
 def chk(i):
-    err = 'Type for variable passed is invalid.'
-
     if i[5:9] == "int ": return "int"
     elif i[5:10] == "bool ": return "bool"
     elif i[5:11] == "float ": return "float"
     elif i[5:12] == "string ": return "str"
-    else: raise error.SyntaxError(err)
+    else: raise error.SyntaxError(error.Conv_Type)
 
 dfile = "./runf.toye"
 
