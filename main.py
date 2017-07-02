@@ -44,10 +44,11 @@ class interpreter:
         elif self.flag_out:
             if self.flag_directout:
                 try: 
-                    ifiltered = self.i[5:-1].replace(" ","").replace("$","")
+                    ifiltered = self.i[5:-1].replace("$","").rstrip()
+                    float(ifiltered)
                     print('out: input was "%s"' % ifiltered)
                 except ValueError:
-                    raise error.ValueError("Cannot convert %s to integer, is invalid." % self.i[5:-1])
+                    raise error.TypeError(error.Conv_Float % ifiltered)
 
                 self.flag_directout = False
                 self.flag_out = False
@@ -57,9 +58,8 @@ class interpreter:
                     iz = self.char_data.replace("i","").rstrip()
                     i = self.imem[int(iz)]
                 except IndexError:
-                    raise error.IndexError("Invalid Imemory index.")
-                ind = self.char_data.rstrip()
-                print('out: at index %s there is "%s".' % (ind, i))
+                    raise error.IndexError(error.Mem_Index)
+                print('out: at index %s there is "%s".' % (iz, i))
                 self.flag_imemout
                 self.flag_out = False
 
@@ -67,9 +67,10 @@ class interpreter:
             if self.flag_directaout:
 
                 try: 
-                    print('aout: %s' % chr(int(self.i[6:-1])))
+                    ifiltered = self.i[6:-1].replace("$","").rstrip()
+                    print('aout: %s' % chr(int(ifiltered)))
                 except ValueError:
-                    raise error.TypeError('Cannot convert "%s" to integer, is invalid.' % self.i[6:-1])
+                    raise error.TypeError(error.Conv_Int % ifiltered)
 
                 self.flag_skip = True
                 while self.i[self.skipby] != "\n": self.skipby+=1
@@ -83,7 +84,7 @@ class interpreter:
                     value = int(self.imem[ind])
                     print('aout: at index %s there is "%s".' % (ind, chr(value) ))
                 except (TypeError,ValueError):
-                    raise error.TypeError("integer argument expected, got float")
+                    raise error.TypeError(error.Int_exp_got_float)
 
                 self.flag_skip = True
                 while self.i[self.skipby] != "\n": self.skipby+=1
@@ -92,22 +93,22 @@ class interpreter:
 
         elif self.flag_decl:
 
-            check = [x for x in self.i if x == '"']
+            check = len([x for x in self.i if x == '"'])
             name = self.i.split('"')[1].split('"')[0]
             value = self.i[:-1].split('$')[1].rstrip()
 
-            if len(check) == 1:
-                raise error.SyntaxError('Missing one " in order to declare Var')
-            elif len(check) > 2:
-                raise error.SyntaxError('too many " in line')
+            if check == 1:
+                raise error.SyntaxError(error.missing_ONE_quot)
+            elif check > 2:
+                raise error.SyntaxError(error.too_many_quot)
 
             if " " in name:
-                raise error.SyntaxError("More than one word found between the quotation marks.")
+                raise error.SyntaxError(error.mthan_ONE_word_in_quot)
             elif "$" in name:
-                raise error.SyntaxError("special character in quotation marks.")
+                raise error.SyntaxError(error.spcChar_in_quot)
 
             if value.lower() not in ("true","false","1","0") and chk(self.i) == "bool":
-                raise error.ValueError("Invalid Value %s cannot convert to boolean." % value)
+                raise error.TypeError(error.Conv_Bool % value)
             else:
                 exec("%s('%s')" % (chk(self.i),value))
             
@@ -128,7 +129,7 @@ class interpreter:
                     else: pass
 
                 except ValueError:
-                    raise error.ValueError("Cannot convert character data to Float")
+                    raise error.ValueError(error.Conv_Float % self.char_data)
 
             var1+=1
 
@@ -136,7 +137,6 @@ class interpreter:
         for self.pos_char,self.char_data in enumerate(self.i):
 
             if self.char_data == '\n':
-                #print("newline!")
                 continue
 
             if self.flag_skip and self.skipby != 0:
@@ -152,7 +152,7 @@ class interpreter:
 
         if not self.flag_active and self.flag_start:
             if self.i.replace(" ","") != '\n' and self.x < len(self.ifln)-1:
-                raise SyntaxError('Invalid Syntax. No command passed at "%s".' % self.i[:-1])
+                raise error.SyntaxError(error.NO_kw_present % self.i[:-1])
 
     def full_words(self): #keyword handler
 
@@ -173,7 +173,7 @@ class interpreter:
             self.skipby = 3
 
             if "$" in self.i and "i" in self.i:
-                raise error.SyntaxError("Invalid Syntax. More than one special character present")
+                raise error.SyntaxError(error.MTO_sc_present)
 
             elif "$" in self.i:
                 self.flag_directout = True
@@ -184,7 +184,7 @@ class interpreter:
                 self.skipby+=1
                 return 0
             else:
-                raise error.SyntaxError("Invalid Syntax. No denomination character present.")
+                raise error.SyntaxError(error.NO_sc_present)
 
         elif self.i[:5].upper() == "AOUT ":
             self.flag_active+=1
@@ -192,7 +192,7 @@ class interpreter:
             self.flag_skip = True
             self.skipby = 4
             if "$" in self.i and "i" in self.i:
-                raise error.SyntaxError("Invalid Syntax. More than one special character present")
+                raise error.SyntaxError(error.MTO_sc_present)
             elif "$" in self.i:
                 self.flag_directaout = True
                 self.skipby+=1
@@ -201,7 +201,7 @@ class interpreter:
                 self.skipby+=1
                 return 0
             else:
-                raise error.SyntaxError("Invalid Syntax. No denomination character present.")
+                raise error.SyntaxError(error.NO_sc_present)
 
         elif self.i[:5].upper() == "DECL:":
             self.flag_active+=1
@@ -210,14 +210,14 @@ class interpreter:
             if '"' in self.i:
                 self.flag_decl = True
             else:
-                raise error.SyntaxError('Missing both " in order to declare Var')
+                raise error.SyntaxError(error.missing_BOTH_quot)
 
     def main_loop(self):
         for self.x, self.i in enumerate(self.ifln):
 
             if self.i[:5].upper() == 'START':
                 if self.flag_start:
-                    raise error.SyntaxError("More than one START statement is present.")
+                    raise error.SyntaxError(error.MTO_st_present)
                 print("starting...")
                 self.flag_start = True
                 self.flag_skip = True
@@ -232,7 +232,7 @@ class interpreter:
                 self.flag_active = 0
 
 def chk(i):
-    err = 'Invalid Syntax. Type for variable passed is invalid.'
+    err = 'Type for variable passed is invalid.'
 
     if i[5:9] == "int ": return "int"
     elif i[5:10] == "bool ": return "bool"
