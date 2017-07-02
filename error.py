@@ -31,6 +31,8 @@ Int_exp_got_float = 'Integer was expected, got Float instead.'
 Conv_Float = 'Cannot convert character data: "%s" to Float.'
 Conv_Int = 'Cannot convert character data: "%s" to Integer.'
 Conv_Bool = 'Cannot convert character data: "%s" to Boolean.'
+Conv_Type = 'Type for variable passed is invalid.'
 
 #~ Index Errors ~
 Mem_Index = 'Invalid Memory index present'
+
