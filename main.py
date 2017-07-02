@@ -23,8 +23,10 @@ class interpreter:
 
         self.flag_active = 0
 
-        self.ifln = open(fl).readlines()
-        #print(self.ifln) #debug statement, gives all data 4 file
+        self.ifln = []
+        for item in open(fl).readlines():
+            if item != "\n": self.ifln.append(item.replace("~","\n~").split("~")[0])
+        #print(self.ifln) #debug-gives data interpreted
 
         self.main_loop()
 
@@ -35,48 +37,44 @@ class interpreter:
         if self.flag_const:
             i = 0
             while self.imem[i] != 0: i+=1
-            self.imem[i] = self.char_data.split("~")[0].replace(" ","")
+            self.imem[i] = self.char_data.replace(" ","")
             print("const: stored constant %s at index %s." % (self.imem[i], i))
             self.flag_const = False
-            return 0
 
         elif self.flag_out:
             if self.flag_directout:
                 try: 
-                    ifiltered = self.i[5:-1].split("~")[0].replace(" ","").replace("$","")
+                    ifiltered = self.i[5:-1].replace(" ","").replace("$","")
                     print('out: input was "%s"' % ifiltered)
                 except ValueError:
                     raise error.ValueError("Cannot convert %s to integer, is invalid." % self.i[5:-1])
 
                 self.flag_directout = False
                 self.flag_out = False
-                return 0
 
             elif self.flag_imemout:
                 try:
-                    iz = self.char_data.replace("i","").replace("~","").rstrip()
+                    iz = self.char_data.replace("i","").rstrip()
                     i = self.imem[int(iz)]
                 except IndexError:
                     raise error.IndexError("Invalid Imemory index.")
-                ind = self.char_data.replace("~","").rstrip()
+                ind = self.char_data.rstrip()
                 print('out: at index %s there is "%s".' % (ind, i))
                 self.flag_imemout
                 self.flag_out = False
-                return 0
 
         elif self.flag_aout:
             if self.flag_directaout:
 
                 try: 
-                    print('aout: %s' % chr(int(self.i[6:-1].split("~")[0].replace("~",""))))
+                    print('aout: %s' % chr(int(self.i[6:-1])))
                 except ValueError:
-                    raise error.ValueError('Cannot convert "%s" to integer, is invalid.' % self.i[6:-1])
+                    raise error.TypeError('Cannot convert "%s" to integer, is invalid.' % self.i[6:-1])
 
                 self.flag_skip = True
                 while self.i[self.skipby] != "\n": self.skipby+=1
                 self.flag_directaout = False
                 self.flag_aout = False
-                return 0
 
             elif self.flag_imemaout:
 
@@ -84,23 +82,19 @@ class interpreter:
                     ind = int(self.i[6:-1].replace("i",""))
                     value = int(self.imem[ind])
                     print('aout: at index %s there is "%s".' % (ind, chr(value) ))
-                except(TypeError,ValueError):
+                except (TypeError,ValueError):
                     raise error.TypeError("integer argument expected, got float")
 
                 self.flag_skip = True
                 while self.i[self.skipby] != "\n": self.skipby+=1
                 self.flag_imemaout = False
                 self.flag_aout = False
-                return 0
 
         elif self.flag_decl:
-            err = "raise error.SyntaxError('Invalid Syntax. Type for variable passed is invalid.')"
-            chk_num = lambda: "float" if self.i[5:11] == "float " else "int" if self.i[5:9] == "int " else exec(err)
-            chk = lambda: "str" if self.i[5:12] == "string " else "bool" if self.i[5:10] == "bool " else chk_num()
 
             check = [x for x in self.i if x == '"']
             name = self.i.split('"')[1].split('"')[0]
-            value = self.i[:-1].split('$')[1].split('~')[0].rstrip()
+            value = self.i[:-1].split('$')[1].rstrip()
 
             if len(check) == 1:
                 raise error.SyntaxError('Missing one " in order to declare Var')
@@ -112,23 +106,20 @@ class interpreter:
             elif "$" in name:
                 raise error.SyntaxError("special character in quotation marks.")
 
-            if value.lower() not in ("true","false","1","0") and chk() == "bool":
+            if value.lower() not in ("true","false","1","0") and chk(self.i) == "bool":
                 raise error.ValueError("Invalid Value %s cannot convert to boolean." % value)
             else:
-                exec("%s('%s')" % (chk(),value))
+                exec("%s('%s')" % (chk(self.i),value))
             
-            self.var_list.append( {name : (chk(),value)} )
+            self.var_list.append( {name : (chk(self.i),value)} )
             self.flag_decl = False
-            print('decl: "%s" created with the type:"%s" and value "%s".'% (name,chk(),value))
+            print('decl: "%s" created with the type:"%s" and value "%s".'% (name,chk(self.i),value))
 
     def encountered(self):
 
         var1 = 1
         while self.i[self.pos_char+var1] != "\n":
             self.char_data += self.i[self.pos_char+var1]
-
-            if "~" == self.i[self.pos_char+var1]:
-                break
 
             if "01234567890" in self.char_data or not self.flag_active:
                 try:
@@ -148,11 +139,6 @@ class interpreter:
                 #print("newline!")
                 continue
 
-            if self.char_data == "~":
-                self.flag_skip = True
-                self.skipby += len(self.i.split("~")[1])-1
-                continue
-
             if self.flag_skip and self.skipby != 0:
                 self.skipby-=1
                 continue
@@ -164,9 +150,9 @@ class interpreter:
                 self.encountered()
             self.flag_handler()
 
-        if not self.flag_active and self.flag_start and "~" not in self.i:
+        if not self.flag_active and self.flag_start:
             if self.i.replace(" ","") != '\n' and self.x < len(self.ifln)-1:
-                raise SyntaxError('Invalid Syntax. No command passed at "%s".' % self.i.rstrip("\n"))
+                raise SyntaxError('Invalid Syntax. No command passed at "%s".' % self.i[:-1])
 
     def full_words(self): #keyword handler
 
@@ -244,6 +230,15 @@ class interpreter:
 
             if self.flag_active:
                 self.flag_active = 0
+
+def chk(i):
+    err = 'Invalid Syntax. Type for variable passed is invalid.'
+
+    if i[5:9] == "int ": return "int"
+    elif i[5:10] == "bool ": return "bool"
+    elif i[5:11] == "float ": return "float"
+    elif i[5:12] == "string ": return "str"
+    else: raise error.SyntaxError(err)
 
 dfile = "./runf.toye"
 
