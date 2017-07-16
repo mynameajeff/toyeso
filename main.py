@@ -302,8 +302,8 @@ def chk(i):
     elif i[5:12] == "string ": return "str"
     else: raise error.SyntaxError(error.Conv_Type)
 
-dfile = "./hello-world-program.toye"
-#dfile = "./runf.toye"
+dfile = "code-examples/hello-world-program.toye"
+#dfile = "code-examples/runf.toye"
 
 if __name__ == "__main__":
     try: 
