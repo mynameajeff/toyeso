@@ -1,0 +1,41 @@
+The author of this is mynameajeff.
+
+Start
+
+~Constant Declarations:
+
+const 33 ~ const: stored constant 33 at index 0.
+const 122
+const 54
+const 10 ~ Equivalent to NEWLINE
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~Declarations:
+
+decl:int "variable" $34 ~ decl: "variable" created with the type:"int" and value "34".
+decl:float "var2" $54.63
+decl:string "var3" $hello, world!
+decl:bool "var4" $true
+decl:float "NEWLINE" $10
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~Main outputs command calls:
+
+out i2 ~ out: at index 0 there is "33".
+aout i3
+
+aout i0
+aout i3
+
+out $65
+aout i3
+
+aout $65
+aout i3
+aout @"var3"
+aout @"NEWLINE"
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+enD
+
+Some other comment
