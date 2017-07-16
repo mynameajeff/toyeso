@@ -19,8 +19,8 @@ The Rules of the lang:
 
     - Every program must end with an END statement.
 
-    - Capitals are optional for keywords,
-        but are not for special use characters(such as i or $)
+    - Capitals are optional for keywords & variable names,
+        but are not for types and the special char (i)
 
     - Before the START statement, (which must 
         occupy the first five character spaces of a line),
@@ -39,8 +39,18 @@ The Rules of the lang:
         
     - Type is implemented with variables(not in the Imem)
         what is currently implemented: string, bool, int, float,
-        but variables cannot be used yet(but they are stored)
-        this functionality will be implemented soon.
+        they are stored, and can be accessed via the AOUT command.
+        
+    - The special characters are these:
+
+        @: this one means 'from var', so @"variable" literally means 'from var named variable'
+        
+        i: this one means 'from constant variable store at index',
+                so i0 literally means 'from constant variable store at index 0'
+
+        $: this one means 'direct value', so $33 literally means 'direct value'
+        
+        all of them work with the command to create the final product of that command.
 
 There are a few keywords, I'll list them now.
 
@@ -51,7 +61,7 @@ There are a few keywords, I'll list them now.
         Example: const 55
 
     decl:
-        plain: <not implemented>
+        @: <not implemented>
 
         i: <not implemented>
 
@@ -63,7 +73,7 @@ There are a few keywords, I'll list them now.
             Example: decl:float "variable" $54.63
 
     out:
-        plain: <not implemented>
+        @: <not implemented>
 
         i: 
             This command will output the value stored at the index 
@@ -78,7 +88,10 @@ There are a few keywords, I'll list them now.
             Example: out $22.5
 
     aout:
-        plain: <not implemented>
+        @:  This command will look to the variable specified within the "'s,
+            get the value and depending on the type, output it.
+            
+            Example: aout @"variable"
 
         i:  This command will output the ascii character
             represented by the number in the Imem at the index
