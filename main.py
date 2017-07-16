@@ -16,6 +16,7 @@ class interpreter:
         self.flag_directout = None
 
         self.flag_aout = None #ascii
+        self.flag_varaout = None
         self.flag_imemaout = None
         self.flag_directaout = None
 
@@ -51,19 +52,27 @@ class interpreter:
                 raise error.SyntaxError(error.missing_ONE_quot)
             elif check > 2:
                 raise error.SyntaxError(error.too_many_quot)
-
             if " " in name:
-                raise error.SyntaxError(error.mthan_ONE_word_in_quot)
-            elif "$" in name:
-                raise error.SyntaxError(error.spcChar_in_quot)
+                raise error.SyntaxError(error.MTO_word_in_quot)
 
             if value.lower() not in ("true","false","1","0"):
                 if chk(self.i) == "bool":
                     raise error.TypeError(error.Conv_Bool % value)
             else:
                 exec("%s('%s')" % (chk(self.i),value))
-            
+
+            valid_var = 0
+
             self.var_list.append( {name : (chk(self.i),value)} )
+
+            for varl in self.var_list:
+                try:
+                    if varl[name]: valid_var+=1
+                except KeyError: pass
+            
+            if valid_var > 1:
+                raise error.SyntaxError(error.MTO_var_w_name % name)
+
             self.flag_decl = False
             #print('decl: "%s" created with the type:"%s" and value "%s".' % 
             #    (name,chk(self.i),value))
@@ -77,16 +86,16 @@ class interpreter:
                     raise error.TypeError(error.Conv_Float % ifiltered)
 
                 self.flag_directout = False
-                self.flag_out = False
 
             elif self.flag_imemout:
                 try:
                     iz = self.char_data.replace("i","").rstrip()
-                    print('%s' % self.imem[int(iz)], end = "")
+                    print(self.imem[int(iz)], end = "")
                 except IndexError:
                     raise error.IndexError(error.Mem_Index)
-                self.flag_imemout
-                self.flag_out = False
+                self.flag_imemout = False
+
+            self.flag_out = False
 
         elif self.flag_aout:
             if self.flag_directaout:
@@ -97,12 +106,7 @@ class interpreter:
                 except ValueError:
                     raise error.TypeError(error.Conv_Int % ifiltered)
 
-                self.flag_skip = True
-                try: 
-                    while self.i[self.skipby] != "\n": self.skipby+=1
-                except: pass
                 self.flag_directaout = False
-                self.flag_aout = False
 
             elif self.flag_imemaout:
 
@@ -113,12 +117,56 @@ class interpreter:
                 except (TypeError,ValueError):
                     raise error.TypeError(error.Int_exp_got_float)
 
-                self.flag_skip = True
-                try:
-                    while self.i[self.skipby] != "\n": self.skipby+=1
-                except: pass
                 self.flag_imemaout = False
-                self.flag_aout = False
+
+            elif self.flag_varaout:
+
+                string = self.i.split('"')
+                check = len([x for x in self.i if x == '"'])
+
+                if check == 1:
+                    raise error.SyntaxError(error.missing_ONE_quot)
+                elif check > 2:
+                    raise error.SyntaxError(error.too_many_quot)
+
+                if "$" in string[0]:
+                    raise error.SyntaxError(error.MTO_sc_present)
+                if "i" in string[0]:
+                    raise error.SyntaxError(error.MTO_sc_present)
+
+                valid_var = 0
+
+                for varl in self.var_list:
+                    try:
+                        if varl[string[1]]: 
+                            valid_var+=1
+                            self.varl = varl
+                    except KeyError: pass
+
+                if not valid_var:
+                    raise error.SyntaxError(error.NO_var_w_name % string[1])
+
+                type_of_variable = self.varl[string[1]][0]
+                value_of_var = self.varl[string[1]][1]
+
+                if type_of_variable == "int":
+                    print('%s' % chr(int(value_of_var)), end = "")
+                elif type_of_variable in ("float","bool"):
+                    try:
+                        print('%s' % chr(int(value_of_var)), end = "")
+                    except:
+                        raise error.TypeError(error.Conv_Int % value_of_var)
+                elif type_of_variable == "str":
+                    print(value_of_var, end = "")
+
+                        #raise error.TypeError(error.Conv_Int % value_of_var)
+
+                self.flag_varaout = False
+
+            self.flag_aout = False
+            self.flag_skip = True
+            while self.i[self.skipby] != "\n":
+                self.skipby+=1
 
     def encountered(self):
 
@@ -165,7 +213,7 @@ class interpreter:
 
     def full_words(self): #keyword handler
 
-        if self.i[:3].upper() == 'END':
+        if self.i[:3].upper() == "END":
             print("ending...")
             self.flag_exit = True
             self.flag_skip = True
@@ -213,13 +261,13 @@ class interpreter:
             self.skipby = 4
             if "$" in self.i and "i" in self.i:
                 raise error.SyntaxError(error.MTO_sc_present)
-            elif "$" in self.i:
-                self.flag_directaout = True
-                self.skipby+=1
-            elif "i" in self.i:
-                self.flag_imemaout = True
-                self.skipby+=1
-                return 0
+
+            elif "@" in self.i: self.flag_varaout = True
+
+            elif "$" in self.i: self.flag_directaout = True
+
+            elif "i" in self.i: self.flag_imemaout = True
+
             else:
                 raise error.SyntaxError(error.NO_sc_present)
 
@@ -254,7 +302,8 @@ def chk(i):
     elif i[5:12] == "string ": return "str"
     else: raise error.SyntaxError(error.Conv_Type)
 
-dfile = "./runf.toye"
+dfile = "./hello-world-program.toye"
+#dfile = "./runf.toye"
 
 if __name__ == "__main__":
     try: 
