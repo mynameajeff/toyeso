@@ -29,7 +29,7 @@ class interpreter:
         for item in open(fl).readlines():
             if item != "\n":
                 self.ifln.append(item.replace("~","\n~").split("~")[0])
-        #print(self.ifln) #debug-gives data interpreted
+        #print(self.ifln) #debug - gives file data that is interpreted
 
         self.main_loop()
 
@@ -45,8 +45,9 @@ class interpreter:
         elif self.flag_decl:
 
             check = len([x for x in self.i if x == '"'])
-            name = self.i.split('"')[1]
             value = self.i[:-1].split('$')[1].rstrip()
+            typeof = self.i.split()[0][5:].lower()
+            name = self.i.split('"')[1]
 
             if check == 1:
                 raise error.SyntaxError(error.missing_ONE_quot)
@@ -55,16 +56,14 @@ class interpreter:
             if " " in name:
                 raise error.SyntaxError(error.MTO_word_in_quot)
 
-            if value.lower() not in ("true","false","1","0"):
-                if chk(self.i) == "bool":
-                    raise error.TypeError(error.Conv_Bool % value)
+            if value.lower() in ("true","false","1","0"):
+                try: exec("%s('%s')" % (typeof, value))
+                except: raise error.SyntaxError(error.Conv_Type)
             else:
-                exec("%s('%s')" % (chk(self.i),value))
+                if typeof == "bool":
+                    raise error.TypeError(error.Conv_Bool % value)
 
             valid_var = 0
-
-            self.var_list.append( {name : (chk(self.i),value)} )
-
             for varl in self.var_list:
                 try:
                     if varl[name]: valid_var+=1
@@ -74,8 +73,9 @@ class interpreter:
                 raise error.SyntaxError(error.MTO_var_w_name % name)
 
             self.flag_decl = False
-            #print('decl: "%s" created with the type:"%s" and value "%s".' % 
-            #    (name,chk(self.i),value))
+            self.var_list.append( {name : (typeof, value)} )
+            # print('decl: "%s" created with the type:"%s" and value "%s".' % 
+            #    (name, typeof, value))
 
         elif self.flag_out:
             if self.flag_directout:
@@ -131,7 +131,7 @@ class interpreter:
 
                 if "$" in string[0]:
                     raise error.SyntaxError(error.MTO_sc_present)
-                if "i" in string[0]:
+                elif "i" in string[0]:
                     raise error.SyntaxError(error.MTO_sc_present)
 
                 valid_var = 0
@@ -193,7 +193,7 @@ class interpreter:
                     isvar = self.i.replace("\n","")
                     raise error.SyntaxError(error.NO_kw_present % isvar)
 
-        for self.pos_char,self.char_data in enumerate(self.i):
+        for self.pos_char, self.char_data in enumerate(self.i):
 
             if self.char_data == '\n':
                 continue
@@ -205,11 +205,8 @@ class interpreter:
             elif self.flag_skip and self.skipby == 0:
                 self.flag_skip = False
 
-            if not self.flag_aout:
-                self.encountered()
-
-            if self.char_data not in (" ","i"):
-                self.flag_handler()
+            self.encountered()
+            self.flag_handler()
 
     def full_words(self): #keyword handler
 
@@ -273,6 +270,8 @@ class interpreter:
 
     def main_loop(self):
         for self.x, self.i in enumerate(self.ifln):
+            if self.i == "\n": continue
+
             if self.flag_exit:
                 sys.exit()
 
@@ -295,15 +294,9 @@ class interpreter:
         if not self.flag_exit:
             raise error.SyntaxError(error.NO_end_present)
 
-def chk(i):
-    if i[5:9] == "int ": return "int"
-    elif i[5:10] == "bool ": return "bool"
-    elif i[5:11] == "float ": return "float"
-    elif i[5:12] == "string ": return "str"
-    else: raise error.SyntaxError(error.Conv_Type)
+#dfile = "code-examples/hello-world-program.toye"
+dfile = "code-examples/runf.toye"
 
-dfile = "code-examples/hello-world-program.toye"
-#dfile = "code-examples/runf.toye"
 
 if __name__ == "__main__":
     try: 
