@@ -48,7 +48,7 @@ The Rules of the lang:
         i: this one means 'from constant variable store at index',
                 so i0 literally means 'from constant variable store at index 0'
 
-        $: this one means 'direct value', so $33 literally means 'direct value'
+        $: this one means 'the direct value', so $33 literally means 'the direct value 33'
         
         all of them work with the command to create the final product of that command.
 
