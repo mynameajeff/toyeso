@@ -4,7 +4,7 @@ Start
 
 ~Declarations:
 
-decl:string "hello_world_string" $Hello, World!
+decl:str "hello_world_string" $Hello, World!
 decl:float "NEWLINE" $10
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -13,21 +13,36 @@ aout @ "hello_world_string"
 aout @ "NEWLINE"
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 ~ASCII METHOD:
-aout $72
-aout $101
-aout $108
-aout $108
-aout $111
-aout $44
-aout $32
-aout $87
-aout $111
-aout $114
-aout $108
-aout $100
-aout $33
-aout $10
+aout $ 72
+aout $ 101
+aout $ 108
+aout $ 108
+aout $ 111
+aout $ 44
+aout $ 32
+aout $ 87
+aout $ 111
+aout $ 114
+aout $ 108
+aout $ 100
+aout $ 33
+aout $ 10
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+~COMBINED METHOD:
+aout @ "hello_world_string"
+aout $ 10
+~~~~~~~~~~~~~~~~~~~~~~~~~
+decl:str "other_string" $What's 2+2?
+const 33
+
+aout @ "other_string"
+aout $ 32
+out $ 4
+aout i0
+aout @ "NEWLINE"
+
+decl:int "var1" $2
+decl:float "var2" $2.5
 
 End
 
