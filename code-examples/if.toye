@@ -1,0 +1,22 @@
+
+start
+
+decl:str "string1" $hello_world!
+decl:str "string2" $bello_borld!
+const 65
+const 10
+aout i0
+aout i1
+if []
+    aout @ "string1"
+    aout i1
+    if []
+        aout @ "string2"
+        aout i1
+        aout i0
+    endif
+    
+    aout i1
+endif
+
+end
