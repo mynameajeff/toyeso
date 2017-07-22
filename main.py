@@ -44,10 +44,12 @@ class interpreter:
         if self.flag_const:
             i = 0
             while self.imem[i] != 0: i+=1
-            self.imem[i] = self.char_data[self.indentlvl:].replace(" ","")
+            if self.indentlvl == 0:
+                self.imem[i] = self.i.split("const ")[-1].replace("\n","")
+            else:
+                self.imem[i] = self.char_data[self.indentlvl:].replace(" ","")
             #print("const: stored constant %s at index %s." % (self.imem[i], i))
             self.flag_const = False
-            return 0
 
         elif self.flag_decl:
 
@@ -118,9 +120,9 @@ class interpreter:
             elif self.flag_imemaout:
 
                 try:
-                    ind = int(self.i[6:-1].split("i")[-1])
-                    value = int(self.imem[ind])
-                    print('%s' % chr(value), end = "")
+                    ind = int(self.i[4:].split("i")[-1])
+                    value = chr(int(self.imem[ind]))
+                    print('%s' % value, end = "")
                 except (TypeError,ValueError):
                     raise error.TypeError(error.Int_exp_got_float)
 
@@ -199,26 +201,7 @@ class interpreter:
 
                 self.flag_logic_if = False
 
-
-
             self.flag_logicflow = False
-
-    def encountered(self):
-
-        var1 = 1
-        while self.i[self.pos_char+var1] != "\n":
-            self.char_data += self.i[self.pos_char+var1]
-
-            if "01234567890" in self.char_data or not self.flag_active:
-                try:
-                    if self.i[self.pos_char+var1] != " ":
-                        float(self.char_data)
-                    else: pass
-
-                except ValueError:
-                    raise error.ValueError(error.Conv_Float % self.char_data)
-
-            var1+=1
 
     def chars(self): #numbers, etc
         if self.flag_skipchars == True:
@@ -241,7 +224,7 @@ class interpreter:
             elif self.flag_skip and self.skipby == 0:
                 self.flag_skip = False
 
-            self.encountered()
+            # self.encountered()
             self.flag_handler()
 
     def full_words(self): #keyword handler
@@ -342,8 +325,8 @@ class interpreter:
             raise error.SyntaxError(error.NO_end_present)
 
 #dfile = "code-examples/hello-world-program.toye"
-dfile = "code-examples/runf.toye"
-
+#dfile = "code-examples/runf.toye"
+dfile = "code-examples/if.toye"
 
 if __name__ == "__main__":
     try: 
