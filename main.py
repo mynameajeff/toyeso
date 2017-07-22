@@ -20,6 +20,12 @@ class interpreter:
         self.flag_imemaout = None
         self.flag_directaout = None
 
+        self.flag_logicflow = None
+        self.flag_logic_if = None
+
+        self.indentlvl = 0
+
+        self.flag_skipchars = None
         self.flag_skip = None
         self.skipby = 0
 
@@ -38,9 +44,10 @@ class interpreter:
         if self.flag_const:
             i = 0
             while self.imem[i] != 0: i+=1
-            self.imem[i] = self.char_data.replace(" ","")
+            self.imem[i] = self.char_data[self.indentlvl:].replace(" ","")
             #print("const: stored constant %s at index %s." % (self.imem[i], i))
             self.flag_const = False
+            return 0
 
         elif self.flag_decl:
 
@@ -89,8 +96,8 @@ class interpreter:
 
             elif self.flag_imemout:
                 try:
-                    iz = self.char_data.replace("i","").rstrip()
-                    print(self.imem[int(iz)], end = "")
+                    ind = int(self.i[5:-1].replace(" ","").split("i")[-1])
+                    print(self.imem[ind], end = "")
                 except IndexError:
                     raise error.IndexError(error.Mem_Index)
                 self.flag_imemout = False
@@ -101,7 +108,7 @@ class interpreter:
             if self.flag_directaout:
 
                 try: 
-                    ifiltered = self.i[6:-1].replace("$","")
+                    ifiltered = self.i[6:-1].split("$")[-1]
                     print('%s' % chr(int(ifiltered.rstrip())), end = "")
                 except ValueError:
                     raise error.TypeError(error.Conv_Int % ifiltered)
@@ -111,7 +118,7 @@ class interpreter:
             elif self.flag_imemaout:
 
                 try:
-                    ind = int(self.i[6:].replace("i","").replace("\n",""))
+                    ind = int(self.i[6:-1].split("i")[-1])
                     value = int(self.imem[ind])
                     print('%s' % chr(value), end = "")
                 except (TypeError,ValueError):
@@ -155,11 +162,12 @@ class interpreter:
                     try:
                         print('%s' % chr(int(value_of_var)), end = "")
                     except:
-                        raise error.TypeError(error.Conv_Int % value_of_var)
+                        raise error.TypeError(error.Conv_Float % value_of_var)
                 elif type_of_variable == "str":
                     print(value_of_var, end = "")
+                    #raise error.TypeError(error.Conv_Int % value_of_var)
 
-                        #raise error.TypeError(error.Conv_Int % value_of_var)
+                else: raise error.TypeError(error.Conv_Type)
 
                 self.flag_varaout = False
 
@@ -167,6 +175,33 @@ class interpreter:
             self.flag_skip = True
             while self.i[self.skipby] != "\n":
                 self.skipby+=1
+
+        if self.flag_logicflow:
+            if self.flag_logic_if:
+
+                if "[" not in self.i and "]" not in self.i:
+                    raise error.SyntaxError(error.missing_square_brackets)
+                elif "[" not in self.i:
+                    raise error.SyntaxError(error.missing_lsquare_bracket)
+                elif "]" not in self.i:
+                    raise error.SyntaxError(error.missing_rsquare_bracket)
+
+                lbracketchk = len([x for x in self.i if x == '['])
+                rbracketchk = len([x for x in self.i if x == ']'])
+
+                if lbracketchk > 1:
+                    if rbracketchk > 1:
+                        raise error.SyntaxError(error.bsquareb_MTO_present) 
+                    else:
+                        raise error.SyntaxError(error.MTO_lsquareb_present)
+                elif rbracketchk > 1:
+                    raise error.SyntaxError(error.MTO_rsquareb_present)
+
+                self.flag_logic_if = False
+
+
+
+            self.flag_logicflow = False
 
     def encountered(self):
 
@@ -186,17 +221,18 @@ class interpreter:
             var1+=1
 
     def chars(self): #numbers, etc
+        if self.flag_skipchars == True:
+            self.flag_skipchars = False
+            return 0
 
         if not self.flag_active and self.flag_start:
-            if self.i[:3].upper() != 'END':
+            if self.i[self.indentlvl:3+self.indentlvl].upper() != 'END':
                 if self.i.replace(" ","") != '\n':
                     isvar = self.i.replace("\n","")
                     raise error.SyntaxError(error.NO_kw_present % isvar)
 
         for self.pos_char, self.char_data in enumerate(self.i):
-
-            if self.char_data == '\n':
-                continue
+            if self.char_data == '\n': continue
 
             if self.flag_skip and self.skipby != 0:
                 self.skipby-=1
@@ -210,19 +246,19 @@ class interpreter:
 
     def full_words(self): #keyword handler
 
-        if self.i[:3].upper() == "END":
+        if self.i[self.indentlvl:3+self.indentlvl].upper() == "END":
             print("ending...")
             self.flag_exit = True
             self.flag_skip = True
             self.skipby = len(self.i)
 
-        elif self.i[:6].upper() == "CONST ":
+        elif self.i[self.indentlvl:6+self.indentlvl].upper() == "CONST ":
             self.flag_active+=1
             self.flag_const = True
             self.flag_skip = True
             self.skipby = 5
 
-        elif self.i[:5].upper() == "DECL:":
+        elif self.i[self.indentlvl:5+self.indentlvl].upper() == "DECL:":
             self.flag_active+=1
             self.flag_skip = True
             self.skipby = 5
@@ -231,7 +267,7 @@ class interpreter:
             else:
                 raise error.SyntaxError(error.missing_BOTH_quot)
 
-        elif self.i[:4].upper() == "OUT ":
+        elif self.i[self.indentlvl:4+self.indentlvl].upper() == "OUT ":
             self.flag_active+=1
             self.flag_out = True
             self.flag_skip = True
@@ -251,7 +287,7 @@ class interpreter:
             else:
                 raise error.SyntaxError(error.NO_sc_present)
 
-        elif self.i[:5].upper() == "AOUT ":
+        elif self.i[self.indentlvl:5+self.indentlvl].upper() == "AOUT ":
             self.flag_active+=1
             self.flag_aout = True
             self.flag_skip = True
@@ -267,6 +303,17 @@ class interpreter:
 
             else:
                 raise error.SyntaxError(error.NO_sc_present)
+
+        elif self.i[self.indentlvl:2+self.indentlvl].upper() == "IF":
+            self.flag_active += 1
+            self.indentlvl += 4
+            self.flag_logicflow = True
+            self.flag_logic_if = True
+            self.flag_skip = True
+            self.skipby = 2
+
+        if self.i[self.indentlvl-4:1+self.indentlvl].upper() == "ENDIF":
+            self.indentlvl -= 4
 
     def main_loop(self):
         for self.x, self.i in enumerate(self.ifln):
