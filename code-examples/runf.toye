@@ -1,6 +1,6 @@
 The author of this is mynameajeff.
 
-Start
+start
 
 ~Constant Declarations:
 
@@ -14,7 +14,7 @@ const 10 ~ Equivalent to NEWLINE
 
 decl:int "variable" $34 ~ decl: "variable" created with the type:"int" and value "34".
 decl:float "var2" $54.63
-decl:string "var3" $hello, world!
+decl:str "var3" $hello, world!
 decl:bool "var4" $true
 decl:float "NEWLINE" $10
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,9 +22,6 @@ decl:float "NEWLINE" $10
 ~Main outputs command calls:
 
 out i2 ~ out: at index 0 there is "33".
-aout i3
-
-aout i0
 aout i3
 
 out $65
