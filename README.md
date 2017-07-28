@@ -104,3 +104,37 @@ There are a few keywords, I'll list them now.
             represented by the number given after the $.
 
             Example: aout $65
+    if:
+    
+        This keyword is unlike the ones above,
+        as it is used like this:
+        
+        if [expression]
+            ~Code here
+        endif
+
+        what this means, is that @, $ and i are used a bit differently, 
+        alongside the syntactic differences.
+
+        if the expression within the [] evaluates to true,
+        the code it will run is raised by 4 spaces,
+        until it meets an ENDIF on the same level as if.
+        
+        the operators currently implemented: !=, ==
+        
+        booleans cannot be used yet within expressions.
+        
+        if's are nestable.
+        if.toye contains an example of this functionality.
+        
+        a few examples of usage:
+        
+        if [variable == $30]
+            ~Code here
+        endif
+        if [i0 != another_variable]
+            ~Code here
+        endif
+        if [$13.4 != i6]
+            ~Code here
+        endif
