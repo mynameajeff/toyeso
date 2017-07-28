@@ -255,7 +255,7 @@ class handler:
                             value_of_var = float(value_of_var)
                             type_of_var = "float"
 
-                        print(value_of_var)
+                        #print(value_of_var)
 
                     else: #string-variable
 
