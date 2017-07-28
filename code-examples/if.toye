@@ -1,22 +1,26 @@
+The author of this is mynameajeff.
 
 start
 
-decl:str "string1" $hello_world!
-decl:str "string2" $bello_borld!
+decl:str "string1" $hello world!
+decl:str "string2" $bello borld!
+decl:int "var2" $30
+decl:bool "var3" $1
+decl:float "var4" $4.32
+
 const 65
 const 10
+
 aout i0
-aout i1
-if []
+aout i1 
+
+if [string1 != string2]
     aout @ "string1"
     aout i1
-    if []
+    if [var2 == $30]
         aout @ "string2"
         aout i1
-        aout i0
     endif
-    
-    aout i1
 endif
 
 end
