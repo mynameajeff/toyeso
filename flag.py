@@ -7,10 +7,18 @@ class handler:
             i = 0
             while self.imem[i] != 0: i+=1
             if self.indentlvl == 0:
-                self.imem[i] = self.i.split("const ")[-1].replace("\n","")
+                value = self.i.split("const ")[-1].replace("\n","")
             else:
-                self.imem[i] = self.char_data[self.indentlvl:].replace(" ","")
+                value = self.char_data[self.indentlvl:].replace(" ","")
             #print("const: stored constant %s at index %s." % (self.imem[i], i))
+
+            try: float(value)
+
+            except:
+                raise error.ValueError(error.Conv_Float
+                    % (value, self.lineno))
+
+            self.imem[i] = value 
             self.flag_const = False
 
         elif self.flag_decl:
@@ -36,7 +44,14 @@ class handler:
                     % self.lineno)
             else:
                 if typeof == "bool":
-                    raise error.TypeError(error.nv_Bool 
+                    raise error.TypeError(error.Conv_Bool 
+                        % (value, self.lineno))
+
+            if typeof == "float":
+                try:
+                    float(value)
+                except ValueError:
+                    raise error.TypeError(error.Conv_Float
                         % (value, self.lineno))
 
             valid_var = 0
@@ -60,7 +75,7 @@ class handler:
                     ifiltered = self.i[5:-1].replace("$","").rstrip()
                     print('%.f' % float(ifiltered), end = "")
                 except ValueError:
-                    raise error.TypeError(error.nv_Float 
+                    raise error.TypeError(error.Conv_Float 
                         % (ifiltered, self.lineno))
 
                 self.flag_directout = False
@@ -70,7 +85,7 @@ class handler:
                     ind = int(self.i[5:-1].replace(" ","").split("i")[-1])
                     print(self.imem[ind], end = "")
                 except IndexError:
-                    raise error.IndexError(error.em_Index
+                    raise error.IndexError(error.Mem_Index
                         % self.lineno)
                 self.flag_imemout = False
 
@@ -95,8 +110,12 @@ class handler:
                     value = chr(int(self.imem[ind]))
                     print('%s' % value, end = "")
                 except ValueError:
-                    raise error.TypeError(error.Int_exp_got_float
-                        % self.lineno)
+                    try:
+                        raise error.TypeError(error.Conv_Int
+                            % (self.imem[ind], self.lineno))
+                    except UnboundLocalError:
+                        raise error.IndexError(error.Mem_Index
+                            % self.lineno)
 
                 self.flag_imemaout = False
 
@@ -141,15 +160,15 @@ class handler:
                     try:
                         print('%s' % chr(int(value_of_var)), end = "")
                     except:
-                        raise error.TypeError(error.nv_Float 
+                        raise error.TypeError(error.Conv_Float 
                             % (value_of_var, self.lineno))
                 elif type_of_variable == "str":
                     print(value_of_var, end = "")
-                    #raise error.TypeError(error.nv_Int 
+                    #raise error.TypeError(error.Conv_Int 
                     #    % (value_of_var, self.lineno))
 
                 else: 
-                    raise error.TypeError(error.nv_Type
+                    raise error.TypeError(error.Conv_Type
                         % self.lineno)
 
                 self.flag_varaout = False
@@ -161,7 +180,7 @@ class handler:
 
         if self.flag_logicflow:
             if self.flag_logic_if:
-                self.skip_if = None
+                self.flag_skip_if = None
 
                 if "[" not in self.i and "]" not in self.i:
                     raise error.SyntaxError(error.missing_square_brackets
@@ -177,7 +196,7 @@ class handler:
 
                 if lbracketchk > 1:
                     if rbracketchk > 1:
-                        raise error.SyntaxError(error.bsquareb_MTO_present
+                        raise error.SyntaxError(error.MTO_squareb_present
                             % self.lineno) 
                     else:
                         raise error.SyntaxError(error.MTO_lsquareb_present
@@ -276,7 +295,11 @@ class handler:
                         #print("!",type_of_var, value_of_var)
                         
                         if type_of_var == "int":
-                            value_of_var = int(value_of_var)
+                            try:
+                                value_of_var = int(value_of_var)
+                            except ValueError:
+                                raise error.TypeError(error.Conv_Int
+                                    % (value_of_var, self.lineno))
 
                         elif type_of_var == "float":
                             value_of_var = float(value_of_var)
@@ -321,14 +344,14 @@ class handler:
 
                 if IFexpr:
                     if expression_list[1] == "==":
-                        self.skip_if = False
+                        self.flag_skip_if = False
                     else:
-                        self.skip_if = True
+                        self.flag_skip_if = True
                 else:
                     if expression_list[1] == "==":
-                        self.skip_if = True
+                        self.flag_skip_if = True
                     else:
-                        self.skip_if = False
+                        self.flag_skip_if = False
 
                 self.flag_logic_if = False
 
