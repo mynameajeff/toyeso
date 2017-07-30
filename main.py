@@ -24,9 +24,8 @@ class interpreter(flag.handler):
         if not self.flag_active and self.flag_start:
             if self.i[self.indentlvl:3+self.indentlvl].upper() != 'END':
                 if self.i.replace(" ","") != '\n':
-                    isvar = self.i.replace("\n","")
                     raise error.SyntaxError(error.NO_kw_present 
-                        % (isvar, self.lineno))
+                        % (self.i.replace("\n",""), self.lineno))
 
         for self.pos_char, self.char_data in enumerate(self.i):
             if self.char_data == '\n': continue
@@ -38,7 +37,6 @@ class interpreter(flag.handler):
             elif self.flag_skip and self.skipby == 0:
                 self.flag_skip = False
 
-            # self.encountered()
             self.flag_handler()
 
     def full_words(self): #keyword handler
@@ -47,8 +45,8 @@ class interpreter(flag.handler):
 
         if i_indented_endif.upper() == "ENDIF":
             self.indentlvl -= 4
-            if self.skip_if:
-                self.skip_if = False
+            if self.flag_skip_if:
+                self.flag_skip_if = False
             return 0
 
         elif i_indented[:5] == "ENDIF" and not self.indentlvl:
@@ -56,7 +54,7 @@ class interpreter(flag.handler):
                 % self.lineno)
 
         else:
-            if self.skip_if: return 0
+            if self.flag_skip_if: return 0
 
         if i_indented[:3] == "END":
             print("ending...")
@@ -111,11 +109,14 @@ class interpreter(flag.handler):
                 raise error.SyntaxError(error.MTO_sc_present 
                     % self.lineno)
 
-            elif "@" in self.i: self.flag_varaout = True
+            elif "@" in self.i: 
+                self.flag_varaout = True
 
-            elif "$" in self.i: self.flag_directaout = True
+            elif "$" in self.i: 
+                self.flag_directaout = True
 
-            elif "i" in self.i: self.flag_imemaout = True
+            elif "i" in self.i: 
+                self.flag_imemaout = True
 
             else:
                 raise error.SyntaxError(error.NO_sc_present
@@ -135,7 +136,6 @@ class interpreter(flag.handler):
 
             if self.flag_exit:
                 break
-                #sys.exit()
 
             if self.i[:5].upper() == 'START':
                 if self.flag_start:
@@ -149,7 +149,7 @@ class interpreter(flag.handler):
 
             if self.flag_start:
                 self.full_words()
-                if not self.skip_if: self.chars()
+                if not self.flag_skip_if: self.chars()
 
             if self.flag_active:
                 self.flag_active = 0
