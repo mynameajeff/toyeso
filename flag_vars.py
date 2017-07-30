@@ -20,7 +20,7 @@ class flag_vars:
 
         self.flag_logicflow = None
         self.flag_logic_if = None
-        self.skip_if = None
+        self.flag_skip_if = None
 
         self.indentlvl = 0
 
