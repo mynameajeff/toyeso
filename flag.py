@@ -54,6 +54,13 @@ class handler:
                     raise error.TypeError(error.Conv_Float
                         % (value, self.lineno))
 
+            if typeof == "int":
+                try:
+                    int(value)
+                except ValueError:
+                    raise error.TypeError(error.Conv_Int
+                        % (value, self.lineno))
+
             valid_var = 0
             for varl in self.var_list:
                 try:
@@ -205,41 +212,41 @@ class handler:
                     raise error.SyntaxError(error.MTO_rsquareb_present
                         % self.lineno) 
 
-                logic_space = self.i.split("[")[1].split("]")[0]
-                #print("here it is: %s"%logic_space)
-                if logic_space == '':
+                expression_list = self.i.split("[")[1].split("]")[0].split(' ')
+
+                if expression_list == '':
                     raise error.SyntaxError(error.NO_Logic_present
                         % self.lineno) 
-
-                expression_list = logic_space.split(' ')
-                #equal to, not equal to, less than, more than
-                comparisons = ("==","!=") #,"\\\\","//"
 
                 if len(expression_list) != 3:
                     raise error.SyntaxError(error.Inv_Args_present
                         % self.lineno) 
 
-                if expression_list[1] not in comparisons:
+                #equal to, not equal to, less than, more than
+                if expression_list[1] not in ("==","!="): #,"\\\\","//"
                     raise error.SyntaxError(error.Inv_Op_present
                         % self.lineno) 
 
-                spec_char_list = ["$", "i"]
+                check_list = []
                 varsl = []
 
-                for x in range(0,3,2):
+                def rfunc():
+                    raise error.TypeError(error.Conv_Type
+                        % self.lineno)
+
+                l1 = lambda: 2 if type_of_var in ("int", "float") else rfunc()
+                return_typevar = lambda: 1 if type_of_var == "str" else l1()
+
+                for x in range(0, 3, 2):
                     special_exists = None
 
-                    for sc in spec_char_list:
+                    for sc in ("$", "i"):
                         if sc == expression_list[x][0]:
                             special_exists = sc
-                            #print(sc)
-                    #print(x, "|%s|" % special_exists)
 
                     if special_exists == "$": #direct
-                        #print("went to the $!")
-
-                        type_of_var = None
                         value_of_var = expression_list[x][1:]
+                        type_of_var = None
 
                         try:
                             value_of_var = int(value_of_var)
@@ -262,97 +269,73 @@ class handler:
                     elif special_exists == "i": #imem
                         try:
                             value_of_var = self.imem[int(expression_list[x][1:])]
-
                         except ValueError:
-                            raise error.TypeError(error.Conv_Int 
-                                % (expression_list[x][1:], self.lineno))
-
+                            try:
+                                type_of_var, value_of_var = self.get_var_val(expression_list[x])
+                            except Exception as e:
+                                print(e)
+                                raise error.TypeError(error.Conv_Int 
+                                    % (expression_list[x][1:], self.lineno))
                         try:
                             value_of_var = int(value_of_var)
                             type_of_var = "int"
                         except:
-                            value_of_var = float(value_of_var)
-                            type_of_var = "float"
+                            try:
+                                value_of_var = float(value_of_var)
+                                type_of_var = "float"
+                            except:
+                                pass #if string
 
                         #print(value_of_var)
 
                     else: #string-variable
-
-                        valid_var = 0
-
-                        for varl in self.var_list:
-                            try:
-                                if varl[expression_list[x]]:
-                                    valid_var+=1
-                                    self.varl = varl
-                            except KeyError: pass
-
-                        if not valid_var:
-                            raise error.SyntaxError(error.NO_var_w_name 
-                                % (expression_list[x], self.lineno))
-
-                        type_of_var, value_of_var = self.varl[expression_list[x]]
-                        #print("!",type_of_var, value_of_var)
                         
-                        if type_of_var == "int":
-                            try:
-                                value_of_var = int(value_of_var)
-                            except ValueError:
-                                raise error.TypeError(error.Conv_Int
-                                    % (value_of_var, self.lineno))
+                        type_of_var, value_of_var = self.get_var_val(expression_list[x])
 
-                        elif type_of_var == "float":
+                        if type_of_var == "float":
                             value_of_var = float(value_of_var)
 
-                    varsl.append((type_of_var, value_of_var))
-
-
-                check_list = []
-                for item in varsl:
-                    if item[0] == "str":
-                        check_list.append(1)
-                    elif item[0] in ("int", "float"):
-                        check_list.append(2)
-                    else:
-                        #check_list.append(3)
-                        raise error.TypeError(error.Conv_Type
-                            % self.lineno) 
+                    varsl.append([type_of_var, value_of_var])
+                    check_list.append(return_typevar())
 
                 if check_list == [1,1]:
-                    if varsl[0][1] == varsl[1][1]:
-                        IFexpr = True
-                    else:
-                        IFexpr = False
+                    check_tuple_1 = (varsl[0][1], varsl[1][1])
 
                 elif check_list == [2,2]:
-                    if float(varsl[0][1]) == float(varsl[1][1]):
-                        IFexpr = True
-                    else:
-                        IFexpr = False
+                    check_tuple_1 = (float(varsl[0][1]), float(varsl[1][1]))
 
-                elif check_list in ([1,2],[2,1]):
-                    if varsl[0][0] == "str":
-                        if len(varsl[0][1]) == varsl[1][1]:
-                            IFexpr = True
-                        else:
-                            IFexpr = False
+                elif check_list in ([1,2], [2,1]):
+                    if varsl[0][0] == 1:
+                        check_tuple_1 = (len(varsl[0][1]), varsl[1][1])
                     else:
-                        if varsl[0][1] == len(varsl[1][1]):
-                            IFexpr = True
-                        else:
-                            IFexpr = False
+                        check_tuple_1 = (varsl[0][1], len(varsl[1][1]))
 
-                if IFexpr:
-                    if expression_list[1] == "==":
-                        self.flag_skip_if = False
-                    else:
-                        self.flag_skip_if = True
+                if check_tuple_1[0] == check_tuple_1[1]:
+                    check_tuple_2 = (False, True)
                 else:
-                    if expression_list[1] == "==":
-                        self.flag_skip_if = True
-                    else:
-                        self.flag_skip_if = False
+                    check_tuple_2 = (True, False)
+
+                if expression_list[1] == "==":
+                    self.flag_skip_if = check_tuple_2[0]
+                else:
+                    self.flag_skip_if = check_tuple_2[1]
 
                 self.flag_logic_if = False
 
             self.flag_logicflow = False
+
+    def get_var_val(self, expr_item):
+        valid_var = 0
+
+        for varl in self.var_list:
+            try:
+                if varl[expr_item]:
+                    valid_var+=1
+                    self.varl = varl
+            except KeyError:
+                pass
+        if not valid_var:
+            raise error.SyntaxError(error.NO_var_w_name 
+                % (expr_item, self.lineno))
+
+        return self.varl[expr_item] #type_of_var, value_of_var
