@@ -47,7 +47,7 @@ missing_ONE_quot = "Missing one ' in order to declare the variable, line %s"
 too_many_quot = 'Too many " in line, cannot declare the variable, line %s'
 MTO_word_in_quot = 'More than one word found in quotation marks, line %s'
 
-#~ Type Errors ~
+#~ Conversion Errors ~
 Conv_Float = 'Cannot convert character data: "%s" to Float, line %s'
 Conv_Int = 'Cannot convert character data: "%s" to Integer, line %s'
 Conv_Bool = 'Cannot convert character data: "%s" to Boolean, line %s'
