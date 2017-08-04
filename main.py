@@ -88,16 +88,17 @@ class interpreter(flag.handler):
                 raise error.SyntaxError(error.MTO_sc_present 
                     % self.lineno)
 
-            elif "$" in self.i:
+            elif "@" in self.i: 
+                self.flag_varout = True
+
+            elif "$" in self.i: 
                 self.flag_directout = True
-                self.skipby+=1
-                return 0
-            elif "i" in self.i:
+
+            elif "i" in self.i: 
                 self.flag_imemout = True
-                self.skipby+=1
-                return 0
+
             else:
-                raise error.SyntaxError(error.NO_sc_present 
+                raise error.SyntaxError(error.NO_sc_present
                     % self.lineno)
 
         elif i_indented[:5] == "AOUT ":
@@ -109,7 +110,7 @@ class interpreter(flag.handler):
                 raise error.SyntaxError(error.MTO_sc_present 
                     % self.lineno)
 
-            elif "@" in self.i: 
+            if "@" in self.i: 
                 self.flag_varaout = True
 
             elif "$" in self.i: 
@@ -166,7 +167,7 @@ class interpreter(flag.handler):
 dfile = "code-examples/if.toye"
 
 if __name__ == "__main__":
-    try: 
+    try:
         interpreter(sys.argv[1])
     except:
         #print('Silently Using: default file "%s"\n' % dfile)
