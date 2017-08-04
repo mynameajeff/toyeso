@@ -73,7 +73,12 @@ There are a few keywords, I'll list them now.
             Example: decl:float "variable" $54.63
 
     out:
-        @: <not implemented>
+        @: 
+            This command will output the value tied to the name
+            specified after the @, but depending on the type,
+            will display it slightly differently.
+            
+            Example: out @"variable"
 
         i: 
             This command will output the value stored at the index 
@@ -90,6 +95,8 @@ There are a few keywords, I'll list them now.
     aout:
         @:  This command will look to the variable specified within the "'s,
             get the value and depending on the type, output it.
+            
+            Also, this command does not work with Floats, however OUT does.
             
             Example: aout @"variable"
 
