@@ -10,6 +10,7 @@ class flag_vars:
         self.flag_decl = None
 
         self.flag_out = None
+        self.flag_varout = None
         self.flag_imemout = None
         self.flag_directout = None
 
