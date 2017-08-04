@@ -1,4 +1,4 @@
-import re, error
+import re, error, decimal
 
 class handler:
     def flag_handler(self):
@@ -24,16 +24,21 @@ class handler:
         elif self.flag_decl:
 
             check = len([x for x in self.i if x == '"'])
-            value = self.i[:-1].split('$')[1].rstrip()
+            value = self.i[:-1].split('$')[1].rstrip().lstrip()
             typeof = self.i.split()[0][5:].lower()
             name = self.i.split('"')[1]
 
-            if check == 1:
-                raise error.SyntaxError(error.missing_ONE_quot
+            if check:
+                if check > 2:
+                    raise error.SyntaxError(error.too_many_quot
+                        % self.lineno)
+                elif check == 1:
+                    raise error.SyntaxError(error.missing_ONE_quot
+                        % self.lineno)
+            else:
+                raise error.SyntaxError(error.missing_BOTH_quot
                     % self.lineno)
-            elif check > 2:
-                raise error.SyntaxError(error.too_many_quot
-                    % self.lineno)
+
             if " " in name:
                 raise error.SyntaxError(error.MTO_word_in_quot
                     % self.lineno)
@@ -49,15 +54,19 @@ class handler:
 
             if typeof == "float":
                 try:
-                    float(value)
+                    value = float(value)
                 except ValueError:
                     raise error.TypeError(error.Conv_Float
                         % (value, self.lineno))
 
             if typeof == "int":
                 try:
-                    int(value)
-                except ValueError:
+                    if not float(value).is_integer():
+                        raise error.TypeError(error.Conv_Int
+                            % (value, self.lineno))
+                    value = decimal.Decimal(value)
+
+                except decimal.InvalidOperation:
                     raise error.TypeError(error.Conv_Int
                         % (value, self.lineno))
 
@@ -67,7 +76,7 @@ class handler:
                     if varl[name]: valid_var+=1
                 except KeyError: pass
             
-            if valid_var > 1:
+            if valid_var >= 1:
                 raise error.SyntaxError(error.MTO_var_w_name 
                     % (name, self.lineno))
 
@@ -95,6 +104,43 @@ class handler:
                     raise error.IndexError(error.Mem_Index
                         % self.lineno)
                 self.flag_imemout = False
+
+            elif self.flag_varout:
+
+                i_rel = self.i.replace("\n","")
+                string = self.i.lower().split('out ')[1]
+                strlist = [
+                    string[0],
+                    ''.join(i_rel.split('@')[1][1:].split('"'))
+                ]
+
+                self.validation_1(string, strlist[1])
+
+                type_of_variable = self.varl[strlist[1]][0]
+                value_of_var = self.varl[strlist[1]][1]
+
+                if type_of_variable == "int":
+                    print('%d' % int(value_of_var), end = "")
+
+                elif type_of_variable == "float":
+                    print(value_of_var, end = "")
+
+                elif type_of_variable == "bool":
+                    if value_of_var.lower() in ("false","0"):
+                        tempvar = 0
+                    else:
+                        tempvar = 1
+                    print(tempvar, end = "")
+
+                elif type_of_variable == "str":
+                    for x in value_of_var:
+                        print(ord(x), end = " ")
+
+                else:
+                    raise error.TypeError(error.Conv_Type
+                        % self.lineno)
+
+                self.flag_varout = False
 
             self.flag_out = False
 
@@ -128,51 +174,37 @@ class handler:
 
             elif self.flag_varaout:
 
-                string = self.i.split('"')
-                check = len([x for x in self.i if x == '"'])
+                i_rel = self.i.replace("\n","")
+                string = self.i.lower().split('aout ')[1]
+                strlist = [
+                    string[0],
+                    ''.join(i_rel.split('@')[1][1:].split('"'))
+                ]
 
-                if check == 1:
-                    raise error.SyntaxError(error.missing_ONE_quot
-                        % self.lineno)
-                elif check > 2:
-                    raise error.SyntaxError(error.too_many_quot
-                        % self.lineno)
+                self.validation_1(string, strlist[1])
 
-                if "$" in string[0]:
-                    raise error.SyntaxError(error.MTO_sc_present
-                        % self.lineno)
-                elif "i" in string[0]:
-                    raise error.SyntaxError(error.MTO_sc_present
-                        % self.lineno)
-
-                valid_var = 0
-
-                for varl in self.var_list:
-                    try:
-                        if varl[string[1]]: 
-                            valid_var+=1
-                            self.varl = varl
-                    except KeyError: pass
-
-                if not valid_var:
-                    raise error.SyntaxError(error.NO_var_w_name 
-                        % (string[1], self.lineno))
-
-                type_of_variable = self.varl[string[1]][0]
-                value_of_var = self.varl[string[1]][1]
+                type_of_variable = self.varl[strlist[1]][0]
+                value_of_var = self.varl[strlist[1]][1]
 
                 if type_of_variable == "int":
                     print('%s' % chr(int(value_of_var)), end = "")
-                elif type_of_variable in ("float","bool"):
+
+                elif type_of_variable == "float":
                     try:
                         print('%s' % chr(int(value_of_var)), end = "")
                     except:
-                        raise error.TypeError(error.Conv_Float 
+                        raise error.TypeError(error.Conv_Int 
                             % (value_of_var, self.lineno))
+
+                elif type_of_variable == "bool":
+                    if value_of_var.lower() in ("false","0"):
+                        tempvar = "false"
+                    else:
+                        tempvar = "true"
+                    print(tempvar, end = "")
+
                 elif type_of_variable == "str":
                     print(value_of_var, end = "")
-                    #raise error.TypeError(error.Conv_Int 
-                    #    % (value_of_var, self.lineno))
 
                 else: 
                     raise error.TypeError(error.Conv_Type
@@ -181,9 +213,6 @@ class handler:
                 self.flag_varaout = False
 
             self.flag_aout = False
-            self.flag_skip = True
-            while self.i[self.skipby] != "\n":
-                self.skipby+=1
 
         if self.flag_logicflow:
             if self.flag_logic_if:
@@ -248,13 +277,12 @@ class handler:
                         value_of_var = expression_list[x][1:]
                         type_of_var = None
 
-                        try:
-                            value_of_var = int(value_of_var)
+                        try: value_of_var = int(value_of_var)
+
                         except:
-                            try:
-                                value_of_var = float(value_of_var)
-                            except:
-                                pass
+                            try: value_of_var = float(value_of_var)
+                            except: pass
+
                         finally:
                             if type(value_of_var) == int:
                                 type_of_var = "int"
@@ -271,9 +299,9 @@ class handler:
                             value_of_var = self.imem[int(expression_list[x][1:])]
                         except ValueError:
                             try:
-                                type_of_var, value_of_var = self.get_var_val(expression_list[x])
-                            except Exception as e:
-                                print(e)
+                                t, v = self.get_var_vt(expression_list[x])
+                                type_of_var, value_of_var = t, v
+                            except:
                                 raise error.TypeError(error.Conv_Int 
                                     % (expression_list[x][1:], self.lineno))
                         try:
@@ -286,11 +314,9 @@ class handler:
                             except:
                                 pass #if string
 
-                        #print(value_of_var)
-
                     else: #string-variable
                         
-                        type_of_var, value_of_var = self.get_var_val(expression_list[x])
+                        type_of_var, value_of_var = self.get_var_vt(expression_list[x])
 
                         if type_of_var == "float":
                             value_of_var = float(value_of_var)
@@ -310,10 +336,10 @@ class handler:
                     else:
                         check_tuple_1 = (varsl[0][1], len(varsl[1][1]))
 
-                if check_tuple_1[0] == check_tuple_1[1]:
-                    check_tuple_2 = (False, True)
-                else:
-                    check_tuple_2 = (True, False)
+                check_tuple_2 = (
+                    check_tuple_1[0] != check_tuple_1[1],
+                    check_tuple_1[0] == check_tuple_1[1]
+                )
 
                 if expression_list[1] == "==":
                     self.flag_skip_if = check_tuple_2[0]
@@ -324,7 +350,7 @@ class handler:
 
             self.flag_logicflow = False
 
-    def get_var_val(self, expr_item):
+    def get_var_vt(self, expr_item):
         valid_var = 0
 
         for varl in self.var_list:
@@ -339,3 +365,29 @@ class handler:
                 % (expr_item, self.lineno))
 
         return self.varl[expr_item] #type_of_var, value_of_var
+
+    def validation_1(self, string, strlist_part):
+        check = len([x for x in string if x == '"'])
+
+        if check:
+            if check > 2:
+                raise error.SyntaxError(error.too_many_quot
+                    % self.lineno)
+            elif check == 1:
+                raise error.SyntaxError(error.missing_ONE_quot
+                    % self.lineno)
+        else:
+            raise error.SyntaxError(error.missing_BOTH_quot
+                % self.lineno)
+
+        valid_var = 0
+
+        for varl in self.var_list:
+            try:
+                if varl[strlist_part]: 
+                    valid_var+=1
+                    self.varl = varl
+            except KeyError: pass
+        if not valid_var:
+            raise error.SyntaxError(error.NO_var_w_name 
+                % (strlist_part, self.lineno))
