@@ -19,6 +19,9 @@ decl:bool "var4" $true
 decl:float "NEWLINE" $10
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+decl:float "variable5" i4
+decl:int "variable7" i 2
+
 ~Main outputs command calls:
 
 out i2 ~ out: at index 0 there is "33".
