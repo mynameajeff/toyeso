@@ -28,14 +28,18 @@ The Rules of the lang:
         will not have begun scanning for syntax. This also
         means no code will be recognised here.
 
-    - After the END statement, (same thing as START but three)
-        you may comment once again, because the interpreter will
-        have terminated and is therefore not scanning for syntax anymore.
+    - After the END statement you may comment once again, 
+        because the interpreter will have terminated and is therefore not scanning for syntax anymore.
 
     - In the event you want to comment within the codespace(start-end)
         you could use the special character "~",
         either on it's own line,
         or at the end of another.
+        
+    - The Imemory is a constant store of integers or floats.
+        the values are input into it by the CONST keyword(which is explained below),
+        and they can be accessed with either OUT, AOUT(ints, or floats with nothing beyond the decimal)
+        or they can be used to create variables via DECL.
         
     - Type is implemented with variables(not in the Imem)
         what is currently implemented: string, bool, int, float,
@@ -63,7 +67,10 @@ There are a few keywords, I'll list them now.
     decl:
         @: <not implemented>
 
-        i: <not implemented>
+        i:
+            creates a variable(of type given after :)
+            with the name given within the "'s
+            and the value in the imem specified by the value given after the i.
 
         $:
             creates a variable(of type given after :)
