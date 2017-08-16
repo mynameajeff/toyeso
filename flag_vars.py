@@ -3,11 +3,15 @@ class flag_vars:
         self.imem = [0]*512
         self.var_list = []
 
+        self.tokens = None
+
         self.flag_start = None
         self.flag_exit = None
 
         self.flag_const = None
         self.flag_decl = None
+        self.flag_imemdecl = None
+        self.flag_directdecl = None
 
         self.flag_out = None
         self.flag_varout = None
