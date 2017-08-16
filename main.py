@@ -42,6 +42,7 @@ class interpreter(flag.handler):
     def full_words(self): #keyword handler
         i_indented = self.i[self.indentlvl:].upper()
         i_indented_endif = self.i[self.indentlvl-4:1+self.indentlvl]
+        self.tokens = [x for x in self.i[:-1].split(' ') if x != '']
 
         if i_indented_endif.upper() == "ENDIF":
             self.indentlvl -= 4
@@ -72,10 +73,17 @@ class interpreter(flag.handler):
             self.flag_active+=1
             self.flag_skip = True
             self.skipby = 5
-            if '"' in self.i:
-                self.flag_decl = True
+
+            self.flag_decl = True
+
+            if "$" == self.tokens[2][0]:
+                self.flag_directdecl = True
+
+            elif "i" == self.tokens[2][0]:
+                self.flag_imemdecl = True
+
             else:
-                raise error.SyntaxError(error.missing_BOTH_quot 
+                raise error.SyntaxError(error.NO_sc_present
                     % self.lineno)
 
         elif i_indented[:4] == "OUT ":
@@ -88,13 +96,13 @@ class interpreter(flag.handler):
                 raise error.SyntaxError(error.MTO_sc_present 
                     % self.lineno)
 
-            elif "@" in self.i: 
+            elif "@" == self.tokens[1][0]: 
                 self.flag_varout = True
 
-            elif "$" in self.i: 
+            elif "$" == self.tokens[1][0]: 
                 self.flag_directout = True
 
-            elif "i" in self.i: 
+            elif "i" == self.tokens[1][0]: 
                 self.flag_imemout = True
 
             else:
@@ -110,13 +118,13 @@ class interpreter(flag.handler):
                 raise error.SyntaxError(error.MTO_sc_present 
                     % self.lineno)
 
-            if "@" in self.i: 
+            if "@" == self.tokens[1][0]: 
                 self.flag_varaout = True
 
-            elif "$" in self.i: 
+            elif "$" == self.tokens[1][0]: 
                 self.flag_directaout = True
 
-            elif "i" in self.i: 
+            elif "i" == self.tokens[1][0]: 
                 self.flag_imemaout = True
 
             else:
