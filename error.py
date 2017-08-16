@@ -8,20 +8,20 @@ sys.excepthook = handler
 
 class SyntaxError(Exception):
     def __init__(self, message):
-        base_message = '\nerror.SyntaxError: Invalid Syntax. %s.'
-        super().__init__(base_message % message) 
+        base = '\nerror.SyntaxError: Invalid Syntax. %s.'
+        super().__init__(base % message) 
 class ValueError(Exception):
     def __init__(self, message):
-        base_message = '\nerror.ValueError: Invalid Values. %s.'
-        super().__init__(base_message % message)
+        base = '\nerror.ValueError: Invalid Values. %s.'
+        super().__init__(base % message)
 class IndexError(Exception):
     def __init__(self, message):
-        base_message = '\nerror.IndexError: Invalid Index. %s.'
-        super().__init__(base_message % message)
+        base = '\nerror.IndexError: Invalid Index. %s.'
+        super().__init__(base % message)
 class TypeError(Exception):
     def __init__(self, message):
-        base_message = '\nerror.TypeError: Invalid Type. %s.'
-        super().__init__(base_message % message)
+        base = '\nerror.TypeError: Invalid Type. %s.'
+        super().__init__(base % message)
 
 #~ Variable Presence Errors ~
 MTO_var_w_name = 'More than one Variable assigned the name "%s", line %s'
