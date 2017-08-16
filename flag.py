@@ -1,4 +1,4 @@
-import re, error, decimal
+import error, decimal
 
 class handler:
     def flag_handler(self):
@@ -12,78 +12,86 @@ class handler:
                 value = self.char_data[self.indentlvl:].replace(" ","")
             #print("const: stored constant %s at index %s." % (self.imem[i], i))
 
-            try: float(value)
+            try: value = int(value)
 
             except:
-                raise error.ValueError(error.Conv_Float
-                    % (value, self.lineno))
+                try:
+                    value = float(value)
+                except:
+                    raise error.TypeError(error.Conv_Type)
 
             self.imem[i] = value 
             self.flag_const = False
 
         elif self.flag_decl:
 
-            check = len([x for x in self.i if x == '"'])
-            value = self.i[:-1].split('$')[1].rstrip().lstrip()
-            typeof = self.i.split()[0][5:].lower()
-            name = self.i.split('"')[1]
+            if self.flag_directdecl:
+                value = self.i[:-1].split('$')[1].rstrip().lstrip()
+                typeof = self.i.split()[0][5:].lower()
+                try: name = self.i.split('"')[1]
 
-            if check:
-                if check > 2:
-                    raise error.SyntaxError(error.too_many_quot
+                except IndexError:
+                    raise error.SyntaxError(error.missing_BOTH_quot
                         % self.lineno)
-                elif check == 1:
-                    raise error.SyntaxError(error.missing_ONE_quot
+
+                self.validation_1(self.i, name, 1)
+
+                if " " in name:
+                    raise error.SyntaxError(error.MTO_word_in_quot
                         % self.lineno)
-            else:
-                raise error.SyntaxError(error.missing_BOTH_quot
-                    % self.lineno)
 
-            if " " in name:
-                raise error.SyntaxError(error.MTO_word_in_quot
-                    % self.lineno)
+                if value.lower() in ("true","false","1","0"):
+                    try: exec("%s('%s')" % (typeof, value))
+                    except: raise error.SyntaxError(error.Conv_Type
+                        % self.lineno)
+                else:
+                    if typeof == "bool":
+                        raise error.TypeError(error.Conv_Bool 
+                            % (value, self.lineno))
 
-            if value.lower() in ("true","false","1","0"):
-                try: exec("%s('%s')" % (typeof, value))
-                except: raise error.SyntaxError(error.Conv_Type
-                    % self.lineno)
-            else:
-                if typeof == "bool":
-                    raise error.TypeError(error.Conv_Bool 
-                        % (value, self.lineno))
+                if typeof == "float":
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        raise error.TypeError(error.Conv_Float
+                            % (value, self.lineno))
 
-            if typeof == "float":
-                try:
-                    value = float(value)
-                except ValueError:
-                    raise error.TypeError(error.Conv_Float
-                        % (value, self.lineno))
+                elif typeof == "int":
+                    try:
+                        if not float(value).is_integer():
+                            raise error.TypeError(error.Conv_Int
+                                % (value, self.lineno))
+                        value = int(decimal.Decimal(value))
 
-            if typeof == "int":
-                try:
-                    if not float(value).is_integer():
+                    except (decimal.InvalidOperation, ValueError):
                         raise error.TypeError(error.Conv_Int
                             % (value, self.lineno))
-                    value = decimal.Decimal(value)
 
-                except decimal.InvalidOperation:
-                    raise error.TypeError(error.Conv_Int
-                        % (value, self.lineno))
+                self.flag_directdecl = False
 
-            valid_var = 0
-            for varl in self.var_list:
-                try:
-                    if varl[name]: valid_var+=1
-                except KeyError: pass
-            
-            if valid_var >= 1:
-                raise error.SyntaxError(error.MTO_var_w_name 
-                    % (name, self.lineno))
+            elif self.flag_imemdecl:
+                
+                typeof = self.tokens[0][5:].lower()
 
-            self.flag_decl = False
+                if typeof not in ("int", "float"):
+                    raise error.TypeError(error.Conv_Type 
+                        % self.lineno)
+
+                name = self.tokens[1][1:-1]
+
+                lamb = lambda: 0 if len(self.tokens) == 4 else 1
+                value = self.imem[int(self.tokens[len(self.tokens)-1][lamb():])]
+
+                if typeof == "int":
+                    try: value = int(value)
+                    except:
+                        raise error.TypeError(error.Conv_Int
+                            % self.lineno)
+
+                self.flag_imemdecl = False
+
             self.var_list.append( {name : (typeof, value)} )
-            # print('decl: "%s" created with the type:"%s" and value "%s".' % 
-            #    (name, typeof, value))
+            self.flag_decl = False
 
         elif self.flag_out:
             if self.flag_directout:
@@ -114,7 +122,7 @@ class handler:
                     ''.join(i_rel.split('@')[1][1:].split('"'))
                 ]
 
-                self.validation_1(string, strlist[1])
+                self.validation_1(string, strlist[1], 0)
 
                 type_of_variable = self.varl[strlist[1]][0]
                 value_of_var = self.varl[strlist[1]][1]
@@ -181,7 +189,7 @@ class handler:
                     ''.join(i_rel.split('@')[1][1:].split('"'))
                 ]
 
-                self.validation_1(string, strlist[1])
+                self.validation_1(string, strlist[1], 0)
 
                 type_of_variable = self.varl[strlist[1]][0]
                 value_of_var = self.varl[strlist[1]][1]
@@ -190,11 +198,11 @@ class handler:
                     print('%s' % chr(int(value_of_var)), end = "")
 
                 elif type_of_variable == "float":
-                    try:
-                        print('%s' % chr(int(value_of_var)), end = "")
-                    except:
+                    if not float(value_of_var).is_integer():
                         raise error.TypeError(error.Conv_Int 
                             % (value_of_var, self.lineno))
+                    else:
+                        print('%s' % chr(int(value_of_var)), end = "")
 
                 elif type_of_variable == "bool":
                     if value_of_var.lower() in ("false","0"):
@@ -305,8 +313,7 @@ class handler:
                                 raise error.TypeError(error.Conv_Int 
                                     % (expression_list[x][1:], self.lineno))
                         try:
-                            value_of_var = int(value_of_var)
-                            type_of_var = "int"
+                            value_of_var, type_of_var = int(value_of_var), "int"
                         except:
                             try:
                                 value_of_var = float(value_of_var)
@@ -325,26 +332,21 @@ class handler:
                     check_list.append(return_typevar())
 
                 if check_list == [1,1]:
-                    check_tuple_1 = (varsl[0][1], varsl[1][1])
+                    check_1 = (varsl[0][1], varsl[1][1])
 
                 elif check_list == [2,2]:
-                    check_tuple_1 = (float(varsl[0][1]), float(varsl[1][1]))
+                    check_1 = (float(varsl[0][1]), float(varsl[1][1]))
 
                 elif check_list in ([1,2], [2,1]):
                     if varsl[0][0] == 1:
-                        check_tuple_1 = (len(varsl[0][1]), varsl[1][1])
+                        check_1 = (len(varsl[0][1]), varsl[1][1])
                     else:
-                        check_tuple_1 = (varsl[0][1], len(varsl[1][1]))
-
-                check_tuple_2 = (
-                    check_tuple_1[0] != check_tuple_1[1],
-                    check_tuple_1[0] == check_tuple_1[1]
-                )
+                        check_1 = (varsl[0][1], len(varsl[1][1]))
 
                 if expression_list[1] == "==":
-                    self.flag_skip_if = check_tuple_2[0]
+                    self.flag_skip_if = (check_1[0] != check_1[1])
                 else:
-                    self.flag_skip_if = check_tuple_2[1]
+                    self.flag_skip_if = (check_1[0] == check_1[1])
 
                 self.flag_logic_if = False
 
@@ -366,7 +368,7 @@ class handler:
 
         return self.varl[expr_item] #type_of_var, value_of_var
 
-    def validation_1(self, string, strlist_part):
+    def validation_1(self, string, strlist_part, ifn):
         check = len([x for x in string if x == '"'])
 
         if check:
@@ -388,6 +390,12 @@ class handler:
                     valid_var+=1
                     self.varl = varl
             except KeyError: pass
-        if not valid_var:
+
+        if ifn:
+            if valid_var >= 1:
+                raise error.SyntaxError(error.MTO_var_w_name 
+                    % (strlist_part, self.lineno))
+        elif not valid_var:
+            print(self.var_list)
             raise error.SyntaxError(error.NO_var_w_name 
                 % (strlist_part, self.lineno))
