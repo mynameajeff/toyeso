@@ -45,6 +45,7 @@ MTO_squareb_present = 'More than one ] and [ is present, line %s'
 missing_BOTH_quot = "Missing both ' in order to declare the variable, line %s"
 missing_ONE_quot = "Missing one ' in order to declare the variable, line %s"
 too_many_quot = 'Too many " in line, cannot declare the variable, line %s'
+inv_num_quot = 'Invalid number of " in line, cannot declare the variable, line %s'
 MTO_word_in_quot = 'More than one word found in quotation marks, line %s'
 
 #~ Conversion Errors ~
