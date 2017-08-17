@@ -25,16 +25,18 @@ class handler:
 
         elif self.flag_decl:
 
+            lamb = lambda: 0 if len(self.tokens) == 4 else 1
+
             if self.flag_directdecl:
                 value = self.i[:-1].split('$')[1].rstrip().lstrip()
-                typeof = self.i.split()[0][5:].lower()
-                try: name = self.i.split('"')[1]
-
-                except IndexError:
-                    raise error.SyntaxError(error.missing_BOTH_quot
-                        % self.lineno)
+                typeof = self.tokens[0][5:].lower()
+                name = self.tokens[1][1:-1]
 
                 self.validation_1(self.i, name, 1)
+
+                if typeof not in ("str", "float", "int", "bool"):
+                    raise error.TypeError(error.Conv_Type
+                        % self.lineno)
 
                 if " " in name:
                     raise error.SyntaxError(error.MTO_word_in_quot
@@ -78,8 +80,6 @@ class handler:
                         % self.lineno)
 
                 name = self.tokens[1][1:-1]
-
-                lamb = lambda: 0 if len(self.tokens) == 4 else 1
                 value = self.imem[int(self.tokens[len(self.tokens)-1][lamb():])]
 
                 if typeof == "int":
@@ -89,6 +89,74 @@ class handler:
                             % self.lineno)
 
                 self.flag_imemdecl = False
+
+            elif self.flag_vardecl:
+                check = len([x for x in self.i if x == '"'])
+                if check > 4: 
+                    raise error.SyntaxError(error.too_many_quot
+                        % self.lineno)
+                elif check < 4:
+                    raise error.SyntaxError(error.inv_num_quot
+                        % self.lineno)
+
+                name = self.tokens[1][1:-1]
+
+                self.validation_1(self.tokens[1], name, 1)
+
+                valid_var = 0
+                for varl in self.var_list:
+                    try:
+                        if varl[self.tokens[len(self.tokens)-1][lamb()+1:-1]]:
+                            valid_var+=1
+                            self.varl = varl
+                    except KeyError: pass
+
+                if not valid_var:
+                    raise error.SyntaxError(error.NO_var_w_name 
+                        % (self.tokens[-1][2:-1], self.lineno))
+
+                value = self.varl[
+                    self.tokens[len(self.tokens)-1][lamb()+1:-1]
+                ][1]
+
+                typeof = self.tokens[0][5:].lower()
+                if typeof not in ("str", "float", "int", "bool"):
+                    raise error.TypeError(error.Conv_Type
+                        % self.lineno)
+
+                if " " in name:
+                    raise error.SyntaxError(error.MTO_word_in_quot
+                        % self.lineno)
+
+                if str(value).lower() in ("true","false","1","0"):
+                    try: exec("%s('%s')" % (typeof, value))
+                    except: raise error.SyntaxError(error.Conv_Type
+                        % self.lineno)
+                else:
+                    print(typeof, self.tokens)
+                    if typeof == "bool":
+                        raise error.TypeError(error.Conv_Bool 
+                            % (value, self.lineno))
+
+                if typeof == "float":
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        raise error.TypeError(error.Conv_Float
+                            % (value, self.lineno))
+
+                elif typeof == "int":
+                    try:
+                        if not float(value).is_integer():
+                            raise error.TypeError(error.Conv_Int
+                                % (value, self.lineno))
+                        value = int(decimal.Decimal(value))
+
+                    except (decimal.InvalidOperation, ValueError):
+                        raise error.TypeError(error.Conv_Int
+                            % (value, self.lineno))
+
+                self.flag_vardecl = False
 
             self.var_list.append( {name : (typeof, value)} )
             self.flag_decl = False
@@ -302,15 +370,16 @@ class handler:
                                 else:
                                     type_of_var = "str"
 
-                    elif special_exists == "i": #imem
+                    elif special_exists == "i":
                         try:
-                            value_of_var = self.imem[int(expression_list[x][1:])]
-                        except ValueError:
+                            type_of_var, value_of_var = self.get_var_vt(
+                                expression_list[x]
+                            )
+                        except:
                             try:
-                                t, v = self.get_var_vt(expression_list[x])
-                                type_of_var, value_of_var = t, v
-                            except:
-                                raise error.TypeError(error.Conv_Int 
+                                value_of_var = self.imem[int(expression_list[x][1:])]
+                            except ValueError:
+                                raise error.TypeError(error.Conv_Int
                                     % (expression_list[x][1:], self.lineno))
                         try:
                             value_of_var, type_of_var = int(value_of_var), "int"
@@ -396,6 +465,5 @@ class handler:
                 raise error.SyntaxError(error.MTO_var_w_name 
                     % (strlist_part, self.lineno))
         elif not valid_var:
-            print(self.var_list)
             raise error.SyntaxError(error.NO_var_w_name 
                 % (strlist_part, self.lineno))
