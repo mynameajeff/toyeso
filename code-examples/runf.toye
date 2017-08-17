@@ -16,11 +16,13 @@ decl:int "variable" $34 ~ decl: "variable" created with the type:"int" and value
 decl:float "var2" $54.63
 decl:str "var3" $hello, world!
 decl:bool "var4" $true
-decl:float "NEWLINE" $10
+decl:float "NEWLINE" i 3
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 decl:float "variable5" i4
 decl:int "variable7" i 2
+
+decl:str "hello_world_copy" @ "var3"
 
 ~Main outputs command calls:
 
