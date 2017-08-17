@@ -65,12 +65,19 @@ There are a few keywords, I'll list them now.
         Example: const 55
 
     decl:
-        @: <not implemented>
+        @: 
+            creates a variable(of type given after :)
+            with the name given within the first pair of "'s
+            and the value is equal to the value of the variable specified in the second pair of "'s.
+            
+            Example: decl:float "variable2" @ "variable"
 
         i:
             creates a variable(of type given after :)
             with the name given within the "'s
             and the value in the imem specified by the value given after the i.
+            
+            Example: decl:float "variable" i 0
 
         $:
             creates a variable(of type given after :)
