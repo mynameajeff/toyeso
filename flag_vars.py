@@ -8,8 +8,11 @@ class flag_vars:
         self.flag_start = None
         self.flag_exit = None
 
+
         self.flag_const = None
+
         self.flag_decl = None
+        self.flag_vardecl = None
         self.flag_imemdecl = None
         self.flag_directdecl = None
 
