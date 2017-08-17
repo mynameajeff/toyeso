@@ -133,7 +133,6 @@ class handler:
                     except: raise error.SyntaxError(error.Conv_Type
                         % self.lineno)
                 else:
-                    print(typeof, self.tokens)
                     if typeof == "bool":
                         raise error.TypeError(error.Conv_Bool 
                             % (value, self.lineno))
