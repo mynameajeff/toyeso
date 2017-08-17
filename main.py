@@ -76,7 +76,14 @@ class interpreter(flag.handler):
 
             self.flag_decl = True
 
-            if "$" == self.tokens[2][0]:
+            if "$" in self.i and "@" in self.i:
+                raise error.SyntaxError(error.MTO_sc_present 
+                    % self.lineno)
+
+            elif "@" == self.tokens[2][0]:
+                self.flag_vardecl = True
+
+            elif "$" == self.tokens[2][0]:
                 self.flag_directdecl = True
 
             elif "i" == self.tokens[2][0]:
